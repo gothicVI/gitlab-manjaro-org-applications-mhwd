@@ -40,6 +40,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <filesystem>
 
 #include "vita/string.hpp"
 
@@ -143,19 +144,19 @@ bool Mhwd::isUserRoot() const
 std::vector<std::string> Mhwd::checkEnvironment() const
 {
     std::vector<std::string> missingDirs;
-    if (!dirExists(MHWD_USB_CONFIG_DIR))
+    if (!std::filesystem::exists(MHWD_USB_CONFIG_DIR))
     {
         missingDirs.emplace_back(MHWD_USB_CONFIG_DIR);
     }
-    if (!dirExists(MHWD_PCI_CONFIG_DIR))
+    if (!std::filesystem::exists(MHWD_PCI_CONFIG_DIR))
     {
         missingDirs.emplace_back(MHWD_PCI_CONFIG_DIR);
     }
-    if (!dirExists(MHWD_USB_DATABASE_DIR))
+    if (!std::filesystem::exists(MHWD_USB_DATABASE_DIR))
     {
         missingDirs.emplace_back(MHWD_USB_DATABASE_DIR);
     }
-    if (!dirExists(MHWD_PCI_DATABASE_DIR))
+    if (!std::filesystem::exists(MHWD_PCI_DATABASE_DIR))
     {
         missingDirs.emplace_back(MHWD_PCI_DATABASE_DIR);
     }
@@ -337,170 +338,10 @@ MHWD::STATUS Mhwd::performTransaction(const Transaction& transaction)
     }
 }
 
-bool Mhwd::copyDirectory(const std::string& source, const std::string& destination)
-{
-    struct stat filestatus;
-
-    if (0 != lstat(destination.c_str(), &filestatus))
-    {
-        if (!createDir(destination))
-        {
-            return false;
-        }
-    }
-    else if (S_ISREG(filestatus.st_mode))
-    {
-        return false;
-    }
-    else if (S_ISDIR(filestatus.st_mode))
-    {
-        if (!removeDirectory(destination))
-        {
-            return false;
-        }
-
-        if (!createDir(destination))
-        {
-            return false;
-        }
-    }
-    struct dirent *dir;
-    DIR *d = opendir(source.c_str());
-
-    if (!d)
-    {
-        return false;
-    }
-    else
-    {
-        bool success = true;
-        while ((dir = readdir(d)) != nullptr)
-        {
-            std::string filename {dir->d_name};
-
-            if (("." == filename) || (".." == filename) || ("" == filename))
-            {
-                continue;
-            }
-            else
-            {
-                std::string sourcePath {source + "/" + filename};
-                std::string destinationPath {destination + "/" + filename};
-                lstat(sourcePath.c_str(), &filestatus);
-
-                if (S_ISREG(filestatus.st_mode))
-                {
-                    if (!copyFile(sourcePath, destinationPath))
-                    {
-                        success = false;
-                    }
-                }
-                else if (S_ISDIR(filestatus.st_mode))
-                {
-                    if (!copyDirectory(sourcePath, destinationPath))
-                    {
-                        success = false;
-                    }
-                }
-            }
-        }
-        closedir(d);
-        return success;
-    }
-}
-
-bool Mhwd::copyFile(const std::string& source, const std::string destination, const mode_t mode)
-{
-    std::ifstream src(source, std::ios::binary);
-    std::ofstream dst(destination, std::ios::binary);
-    if (!src || !dst)
-    {
-        return false;
-    }
-
-    dst << src.rdbuf();
-    mode_t process_mask = umask(0);
-    chmod(destination.c_str(), mode);
-    umask(process_mask);
-    return true;
-}
-
-bool Mhwd::removeDirectory(const std::string& directory)
-{
-    DIR *d = opendir(directory.c_str());
-
-    if (!d)
-    {
-        return false;
-    }
-    else
-    {
-        bool success = true;
-        struct dirent *dir;
-        while ((dir = readdir(d)) != nullptr)
-        {
-            std::string filename {dir->d_name};
-
-            if (("." == filename) || (".." == filename) || ("" == filename))
-            {
-                continue;
-            }
-            else
-            {
-                std::string filepath {directory + "/" + filename};
-                struct stat filestatus;
-                lstat(filepath.c_str(), &filestatus);
-
-                if (S_ISREG(filestatus.st_mode))
-                {
-                    if (0 != unlink(filepath.c_str()))
-                    {
-                        success = false;
-                    }
-                }
-                else if (S_ISDIR(filestatus.st_mode))
-                {
-                    if (!removeDirectory(filepath))
-                    {
-                        success = false;
-                    }
-                }
-            }
-        }
-        closedir(d);
-
-        if (0 != rmdir(directory.c_str()))
-        {
-            success = false;
-        }
-        return success;
-    }
-}
-
-bool Mhwd::dirExists(const std::string& path) const
-{
-    struct stat filestatus;
-    if (0 != stat(path.c_str(), &filestatus))
-    {
-        return false;
-    }
-
-    return true;
-}
-
-bool Mhwd::createDir(const std::string& path, const mode_t mode)
-{
-    mode_t process_mask = umask(0);
-    int ret = mkdir(path.c_str(), mode);
-    umask(process_mask);
-
-    constexpr unsigned short SUCCESS = 0;
-    return (SUCCESS == ret);
-}
 
 MHWD::STATUS Mhwd::installConfig(std::shared_ptr<Config> config)
 {
-    std::string databaseDir;
+    std::filesystem::path databaseDir;
     if ("USB" == config->type_)
     {
         databaseDir = MHWD_USB_DATABASE_DIR;
@@ -515,7 +356,12 @@ MHWD::STATUS Mhwd::installConfig(std::shared_ptr<Config> config)
         return MHWD::STATUS::ERROR_SCRIPT_FAILED;
     }
 
-    if (!copyDirectory(config->basePath_, databaseDir + "/" + config->name_))
+    std::error_code ec;
+    std::filesystem::copy(config->basePath_,
+                          databaseDir / config->name_,
+                          std::filesystem::copy_options::recursive, ec);
+
+    if (ec)
     {
         return MHWD::STATUS::ERROR_SET_DATABASE;
     }
@@ -546,7 +392,10 @@ MHWD::STATUS Mhwd::uninstallConfig(Config *config)
             return MHWD::STATUS::ERROR_SCRIPT_FAILED;
         }
 
-        if (!removeDirectory(installedConfig->basePath_))
+        std::error_code ec;
+        std::filesystem::remove_all(installedConfig->basePath_,ec);
+
+        if (ec)
         {
             return MHWD::STATUS::ERROR_SET_DATABASE;
         }
