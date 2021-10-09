@@ -29,12 +29,12 @@
 #include <string>
 #include <vector>
 
-Config::Config(std::string configPath, std::string type)
+Config::Config(const std::string& configPath, const std::string& type)
     : type_(type), basePath_(configPath.substr(0, configPath.find_last_of('/'))),
       configPath_(configPath), hwdIDs_(1)
 {}
 
-bool Config::readConfigFile(std::string configPath)
+bool Config::readConfigFile(const std::string& configPath)
 {
     std::ifstream file(configPath);
 
@@ -198,7 +198,7 @@ bool Config::readConfigFile(std::string configPath)
     return ! name_.empty();
 }
 
-std::vector<std::string> Config::splitValue(Vita::string str, Vita::string onlyEnding)
+std::vector<std::string> Config::splitValue(const Vita::string& str, const Vita::string& onlyEnding)
 {
     std::vector<Vita::string> work = str.toLower().explode(" ");
     std::vector<std::string> final;
@@ -220,14 +220,17 @@ std::vector<std::string> Config::splitValue(Vita::string str, Vita::string onlyE
     return final;
 }
 
-Vita::string Config::getRightConfigPath(Vita::string str, Vita::string baseConfigPath)
+Vita::string Config::getRightConfigPath(const Vita::string& str, const Vita::string& baseConfigPath)
 {
-    str = str.trim();
-
-    if ((str.size() <= 0) || ("/" == str.substr(0, 1)))
-    {
+    if(str.empty()){
         return str;
     }
+    auto trimmed = str.trim();
 
-    return baseConfigPath + "/" + str;
+    if ((trimmed.empty()) || ("/" == trimmed.substr(0, 1)))
+    {
+        return trimmed;
+    }
+
+    return baseConfigPath + "/" + trimmed;
 }

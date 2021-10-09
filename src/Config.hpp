@@ -33,8 +33,8 @@
 
 struct Config
 {
-    Config(std::string configPath, std::string type);
-    bool readConfigFile(std::string configPath);
+    Config(const std::string& configPath,const std::string& type);
+    bool readConfigFile(const std::string& configPath);
 
     struct HardwareID
     {
@@ -59,8 +59,8 @@ struct Config
     std::vector<std::string> dependencies_;
 
 private:
-    std::vector<std::string> splitValue(Vita::string str, Vita::string onlyEnding = "");
-    Vita::string getRightConfigPath(Vita::string str, Vita::string baseConfigPath);
+    std::vector<std::string> splitValue(const Vita::string& str,const Vita::string& onlyEnding = "");
+    Vita::string getRightConfigPath(const Vita::string& str,const Vita::string& baseConfigPath);
 };
 
 #endif /* CONFIG_HPP_ */

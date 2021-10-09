@@ -37,16 +37,16 @@
 class ConsoleWriter
 {
 public:
-    void printStatus(std::string statusMsg) const;
-    void printError(std::string errorMsg) const;
-    void printWarning(std::string warningMsg) const;
-    void printMessage(MHWD::MESSAGETYPE type, std::string str) const;
+    void printStatus(const std::string& statusMsg) const;
+    void printError(const std::string& errorMsg) const;
+    void printWarning(const std::string& warningMsg) const;
+    void printMessage(MHWD::MESSAGETYPE type, const std::string& str) const;
     void printHelp() const;
-    void printVersion(std::string& versionMhwd, std::string& yearCopy) const;
+    void printVersion(const std::string& versionMhwd, const std::string& yearCopy) const;
     void listDevices(const std::vector<std::shared_ptr<Device>>& devices,
-            std::string typeOfDevice) const;
+            const std::string& typeOfDevice) const;
     void listConfigs(const std::vector<std::shared_ptr<Config>>& configs,
-            std::string header) const;
+            const std::string& header) const;
     void printAvailableConfigsInDetail(const std::string& deviceType,
             const std::vector<std::shared_ptr<Device>>& devices) const;
     void printInstalledConfigs(const std::string& deviceType,

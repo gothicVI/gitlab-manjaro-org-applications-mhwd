@@ -67,7 +67,7 @@ void Data::updateInstalledConfigData()
     setMatchingConfigs(USBDevices, installedUSBConfigs, true);
 }
 
-void Data::fillInstalledConfigs(std::string type)
+void Data::fillInstalledConfigs(const std::string& type)
 {
     std::vector<std::string> configPaths;
     std::vector<std::shared_ptr<Config>>* configs;
@@ -240,8 +240,8 @@ void Data::getAllDependenciesToInstall(std::shared_ptr<Config> config,
     }
 }
 
-std::shared_ptr<Config> Data::getDatabaseConfig(const std::string configName,
-        const std::string configType)
+std::shared_ptr<Config> Data::getDatabaseConfig(const std::string& configName,
+        const std::string& configType)
 {
     std::vector<std::shared_ptr<Config>> allConfigs;
 
@@ -385,7 +385,7 @@ void Data::fillDevices(hw_item hw, std::vector<std::shared_ptr<Device>>& devices
     hd_free_hd_data(hd_data.get());
 }
 
-void Data::fillAllConfigs(std::string type)
+void Data::fillAllConfigs(const std::string& type)
 {
     std::vector<std::string> configPaths;
     std::vector<std::shared_ptr<Config>>* configs;
@@ -418,7 +418,7 @@ void Data::fillAllConfigs(std::string type)
 }
 
 std::vector<std::string> Data::getRecursiveDirectoryFileList(const std::string& directoryPath,
-        std::string onlyFilename)
+        const std::string& onlyFilename)
 {
     std::vector<std::string> list;
     struct dirent *dir = nullptr;
@@ -459,14 +459,17 @@ std::vector<std::string> Data::getRecursiveDirectoryFileList(const std::string& 
     return list;
 }
 
-Vita::string Data::getRightConfigPath(Vita::string str, Vita::string baseConfigPath)
+Vita::string Data::getRightConfigPath(const Vita::string& str, const Vita::string& baseConfigPath)
 {
-    str = str.trim();
-    if ((str.size() <= 0) || (str.substr(0, 1) == "/"))
-    {
+    if(str.empty()){
         return str;
     }
-    return baseConfigPath + "/" + str;
+    auto trimmed = str.trim();
+    if ((trimmed.size() <= 0) || (trimmed.substr(0, 1) == "/"))
+    {
+        return trimmed;
+    }
+    return baseConfigPath + "/" + trimmed;
 }
 
 void Data::updateConfigData()

@@ -68,26 +68,26 @@ public:
     void getAllDependenciesToInstall(std::shared_ptr<Config> config,
             std::vector<std::shared_ptr<Config>>& installedConfigs,
             std::vector<std::shared_ptr<Config>> *depends);
-    std::shared_ptr<Config> getDatabaseConfig(const std::string configName,
-            const std::string configType);
+    std::shared_ptr<Config> getDatabaseConfig(const std::string& configName,
+            const std::string& configType);
     std::vector<std::shared_ptr<Config>> getAllLocalConflicts(std::shared_ptr<Config> config);
     std::vector<std::shared_ptr<Config>> getAllLocalRequirements(std::shared_ptr<Config> config);
 
 private:
     void getAllDevicesOfConfig(const std::vector<std::shared_ptr<Device>>& devices,
             std::shared_ptr<Config> config, std::vector<std::shared_ptr<Device>>& foundDevices);
-    void fillInstalledConfigs(std::string type);
+    void fillInstalledConfigs(const std::string& type);
     void fillDevices(hw_item hw, std::vector<std::shared_ptr<Device>>& devices);
-    void fillAllConfigs(std::string type);
+    void fillAllConfigs(const std::string& type);
     void setMatchingConfigs(const std::vector<std::shared_ptr<Device>>& devices,
             std::vector<std::shared_ptr<Config>>& configs, bool setAsInstalled);
     void setMatchingConfig(std::shared_ptr<Config> config, const std::vector<std::shared_ptr<Device>>& devices,
             bool setAsInstalled);
     void addConfigSorted(std::vector<std::shared_ptr<Config>>& configs, std::shared_ptr<Config> newConfig);
     std::vector<std::string> getRecursiveDirectoryFileList(const std::string& directoryPath,
-            std::string onlyFilename = "");
+            const std::string& onlyFilename = "");
 
-    Vita::string getRightConfigPath(Vita::string str, Vita::string baseConfigPath);
+    Vita::string getRightConfigPath(const Vita::string& str, const Vita::string& baseConfigPath);
     void updateConfigData();
 
     Vita::string from_Hex(uint16_t hexnum, int fill);

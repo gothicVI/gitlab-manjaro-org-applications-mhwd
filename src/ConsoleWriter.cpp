@@ -32,25 +32,25 @@
 #include <string>
 #include <vector>
 
-void ConsoleWriter::printStatus(std::string statusMsg) const
+void ConsoleWriter::printStatus(const std::string& statusMsg) const
 {
     std::cout << CONSOLE_RED_MESSAGE_COLOR << "> "
             << CONSOLE_COLOR_RESET << statusMsg << std::endl;
 }
 
-void ConsoleWriter::printError(std::string errorMsg) const
+void ConsoleWriter::printError(const std::string& errorMsg) const
 {
     std::cout << CONSOLE_RED_MESSAGE_COLOR << "Error: "
             << CONSOLE_COLOR_RESET << errorMsg << std::endl;
 }
 
-void ConsoleWriter::printWarning(std::string warningMsg) const
+void ConsoleWriter::printWarning(const std::string& warningMsg) const
 {
     std::cout << CONSOLE_RED_MESSAGE_COLOR << "Warning: "
             << CONSOLE_COLOR_RESET << warningMsg << std::endl;
 }
 
-void ConsoleWriter::printMessage(MHWD::MESSAGETYPE type, std::string msg) const
+void ConsoleWriter::printMessage(MHWD::MESSAGETYPE type, const std::string& msg) const
 {
     switch(type)
     {
@@ -103,7 +103,7 @@ void ConsoleWriter::printHelp() const
             << "  --pmroot <path>\t\t\tset package manager root\n" << std::endl;
 }
 
-void ConsoleWriter::printVersion(std::string& versionMhwd, std::string& yearCopy) const
+void ConsoleWriter::printVersion(const std::string& versionMhwd, const std::string& yearCopy) const
 {
     std::cout << "Manjaro Hardware Detection v"<< versionMhwd <<"\n\n"
             << "Copyright (C) "<< yearCopy <<" Manjaro Linux Developers\n"
@@ -112,7 +112,7 @@ void ConsoleWriter::printVersion(std::string& versionMhwd, std::string& yearCopy
             << std::endl;
 }
 
-void ConsoleWriter::listDevices(const std::vector<std::shared_ptr<Device>>& devices, std::string type) const
+void ConsoleWriter::listDevices(const std::vector<std::shared_ptr<Device>>& devices, const std::string& type) const
 {
     if (devices.empty())
     {
@@ -142,7 +142,7 @@ void ConsoleWriter::listDevices(const std::vector<std::shared_ptr<Device>>& devi
     }
 }
 
-void ConsoleWriter::listConfigs(const std::vector<std::shared_ptr<Config>>& configs, std::string header) const
+void ConsoleWriter::listConfigs(const std::vector<std::shared_ptr<Config>>& configs, const std::string& header) const
 {
     printStatus(header);
     printLine();
