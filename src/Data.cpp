@@ -84,7 +84,7 @@ void Data::fillInstalledConfigs(std::vector<Config>& configs,
     }
 }
 
-void Data::getAllDevicesOfConfig(const Config& config, std::vector<Device>& foundDevices)
+void Data::getAllDevicesOfConfig(const Config& config, std::vector<Device*>& foundDevices)
 {
     std::vector<Device> devices;
 
@@ -107,9 +107,9 @@ bool containsFnmatch(TInputIterator begin, TInputIterator end, const std::string
     }) != end;
 }
 
-void Data::getAllDevicesOfConfig(const std::vector<Device>& devices,
+void Data::getAllDevicesOfConfig(std::vector<Device>& devices,
         const Config& config,
-        std::vector<Device>& foundDevices)
+        std::vector<Device*>& foundDevices)
 {
     foundDevices.clear();
 
@@ -117,7 +117,7 @@ void Data::getAllDevicesOfConfig(const std::vector<Device>& devices,
     {
         bool foundDevice = false;
         // Check all devices
-        for (const auto& device : devices)
+        for (auto& device : devices)
         {
             // Check class ids
             bool found = containsFnmatch(hwdId.classIDs.begin(), hwdId.classIDs.end(), device.classID_);
@@ -160,7 +160,7 @@ void Data::getAllDevicesOfConfig(const std::vector<Device>& devices,
             if (!found)
             {
                 foundDevice = true;
-                foundDevices.push_back(device);
+                foundDevices.push_back(&device);
             }
         }
 
@@ -454,7 +454,7 @@ void Data::updateConfigData()
     updateInstalledConfigData();
 }
 
-void Data::setMatchingConfigs(const std::vector<Device>& devices,
+void Data::setMatchingConfigs(std::vector<Device>& devices,
         std::vector<Config>& configs, bool setAsInstalled)
 {
     for (auto& config : configs)
@@ -464,9 +464,9 @@ void Data::setMatchingConfigs(const std::vector<Device>& devices,
 }
 
 void Data::setMatchingConfig(const Config& config,
-        const std::vector<Device>& devices, bool setAsInstalled)
+        std::vector<Device>& devices, bool setAsInstalled)
 {
-    std::vector<Device> foundDevices;
+    std::vector<Device*> foundDevices;
 
     getAllDevicesOfConfig(devices, config, foundDevices);
 
@@ -475,11 +475,11 @@ void Data::setMatchingConfig(const Config& config,
     {
         if (setAsInstalled)
         {
-            addConfigSorted(foundDevice.installedConfigs_, config);
+            addConfigSorted(foundDevice->installedConfigs_, config);
         }
         else
         {
-            addConfigSorted(foundDevice.availableConfigs_, config);
+            addConfigSorted(foundDevice->availableConfigs_, config);
         }
     }
 }

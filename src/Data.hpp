@@ -63,7 +63,7 @@ public:
     std::vector<Config> invalidConfigs;
 
     void updateInstalledConfigData();
-    void getAllDevicesOfConfig(const Config& config, std::vector<Device>& foundDevices);
+    void getAllDevicesOfConfig(const Config& config, std::vector<Device *> &foundDevices);
 
     std::vector<Config> getAllDependenciesToInstall(const Config&  config);
     void getAllDependenciesToInstall(const Config& config,
@@ -75,14 +75,14 @@ public:
     std::vector<Config> getAllLocalRequirements(const Config& config);
 
 private:
-    void getAllDevicesOfConfig(const std::vector<Device>& devices,
-            const Config& config, std::vector<Device>& foundDevices);
+    void getAllDevicesOfConfig(std::vector<Device> &devices,
+            const Config& config, std::vector<Device *> &foundDevices);
     void fillInstalledConfigs(std::vector<Config>& configs, const std::set<std::filesystem::path>& configPaths, const std::string& type);
     void fillDevices(hw_item hw, std::vector<Device>& devices);
     void fillAllConfigs(const std::string& type);
-    void setMatchingConfigs(const std::vector<Device>& devices,
+    void setMatchingConfigs(std::vector<Device> &devices,
             std::vector<Config>& configs, bool setAsInstalled);
-    void setMatchingConfig(const Config& config, const std::vector<Device>& devices,
+    void setMatchingConfig(const Config& config, std::vector<Device> &devices,
             bool setAsInstalled);
     void addConfigSorted(std::vector<Config>& configs, const Config& newConfig);
     std::set<std::filesystem::path> getRecursiveDirectoryFileList(const std::filesystem::path& directoryPath,

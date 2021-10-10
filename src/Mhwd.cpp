@@ -423,20 +423,19 @@ bool Mhwd::runScript(const Config& config, MHWD::TransactionType operationType)
     cmd += " --config \"" + config.configPath_ + "\"";
 
     // Set all config devices as argument
-    std::vector<Device> foundDevices;
+    std::vector<Device*> foundDevices;
     std::vector<Device> devices;
     data_.getAllDevicesOfConfig(config, foundDevices);
 
-    for (auto&& foundDevice = foundDevices.begin();
-            foundDevice != foundDevices.end(); ++foundDevice)
+    for (auto& foundDevice : foundDevices)
     {
         bool found = false;
 
         // Check if already in list
         for (auto&& dev = devices.begin(); dev != devices.end(); ++dev)
         {
-            if ((*foundDevice).sysfsBusID_ == (*dev).sysfsBusID_
-                    && (*foundDevice).sysfsID_ == (*dev).sysfsID_)
+            if (foundDevice->sysfsBusID_ == dev->sysfsBusID_
+                    && foundDevice->sysfsID_ == dev->sysfsID_)
             {
                 found = true;
                 break;
@@ -449,9 +448,9 @@ bool Mhwd::runScript(const Config& config, MHWD::TransactionType operationType)
         }
     }
 
-    for (auto&& dev = devices.begin(); dev != devices.end(); ++dev)
+    for (const auto& dev : devices)
     {
-        Vita::string busID = (*dev).sysfsBusID_;
+        Vita::string busID = dev.sysfsBusID_;
 
         if ("PCI" == config.type_)
         {
@@ -467,7 +466,7 @@ bool Mhwd::runScript(const Config& config, MHWD::TransactionType operationType)
             }
         }
 
-        cmd += " --device \"" + (*dev).classID_ + "|" + (*dev).vendorID_ + "|" + (*dev).deviceID_
+        cmd += " --device \"" + dev.classID_ + "|" + dev.vendorID_ + "|" + dev.deviceID_
                 + "|" + busID + "\"";
     }
 
