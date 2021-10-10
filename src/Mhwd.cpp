@@ -24,15 +24,10 @@
 
 #include "Mhwd.hpp"
 
+//getuid()
 #include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 #include <algorithm>
-#include <cctype>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -41,7 +36,6 @@
 #include <string>
 #include <vector>
 #include <filesystem>
-#include <ranges>
 
 #include "vita/string.hpp"
 
@@ -1021,87 +1015,83 @@ int Mhwd::launch(int argc, char *argv[])
         if (!isUserRoot())
         {
             consoleWriter_.printError("You cannot perform this operation unless you are root!");
+            return 1;
         }
-        else
+        for (const auto& configName : configs_)
         {
-            for (auto&& configName = configs_.begin();
-                    configName != configs_.end(); configName++)
+            if (arguments_.CUSTOM_INSTALL)
             {
-                if (arguments_.CUSTOM_INSTALL)
+                // Custom install -> get configs
+                std::filesystem::directory_entry dentry(configName / "MHWDCONFIG");
+
+
+
+                if (!dentry.exists())
                 {
-                    // Custom install -> get configs
-                    struct stat filestatus;
-                    std::string filepath = (*configName) + "/MHWDCONFIG";
-
-                    if (0 != stat(filepath.c_str(), &filestatus))
-                    {
-                        consoleWriter_.printError("custom config '" + filepath + "' does not exist!");
-                        return 1;
-                    }
-                    else if (!S_ISREG(filestatus.st_mode))
-                    {
-                        consoleWriter_.printError("custom config '" + filepath + "' is invalid!");
-                        return 1;
-                    }
-                    else
-                    {
-                        config_.reset(new Config(filepath, operationType));
-                        if (!config_->readConfigFile(filepath))
-                        {
-                            consoleWriter_.printError("failed to read custom config '" + filepath + "'!");
-                            return 1;
-                        }
-
-                        else if (!performTransaction(*config_, MHWD::TransactionType::INSTALL))
-                        {
-                            return 1;
-                        }
-                    }
+                    consoleWriter_.printError("custom config '" + dentry.path().string() + "' does not exist!");
+                    return 1;
                 }
-                else if (arguments_.INSTALL)
+                if (!dentry.is_regular_file())
                 {
-                    auto configOptional = getAvailableConfig(*configName, operationType);
-
-                    if(!configOptional){
-
-                        configOptional = getDatabaseConfig(*configName, operationType);
-                        consoleWriter_.printWarning(
-                            "no matching device for config '" + (*configName) + "' found!");
-
-                    }
-
-                    config_ = configOptional?std::make_unique<Config>(configOptional.value()):nullptr;
-                    if (!config_)
-                    {
-                        consoleWriter_.printError("config '" + (*configName) + "' does not exist!");
-                        return 1;
-                    }
-
-
-                    if (!performTransaction(*config_, MHWD::TransactionType::INSTALL))
-                    {
-                        return 1;
-                    }
+                    consoleWriter_.printError("custom config '" + dentry.path().string() + "' is invalid!");
+                    return 1;
                 }
-                else if (arguments_.REMOVE)
+                config_.reset(new Config(dentry.path(), operationType));
+                if (!config_->readConfigFile(dentry.path()))
                 {
-                    auto configOptional = getInstalledConfig((*configName), operationType);
+                    consoleWriter_.printError("failed to read custom config '" + dentry.path().string()  + "'!");
+                    return 1;
+                }
 
-                    config_ = configOptional?std::make_unique<Config>(configOptional.value()):nullptr;
+                else if (!performTransaction(*config_, MHWD::TransactionType::INSTALL))
+                {
+                    return 1;
+                }
+            }
+            else if (arguments_.INSTALL)
+            {
+                auto configOptional = getAvailableConfig(configName, operationType);
 
-                    if (!config_)
-                    {
-                        consoleWriter_.printError("config '" + (*configName) + "' is not installed!");
-                        return 1;
-                    }
+                if(!configOptional){
 
-                    else if (!performTransaction(*config_, MHWD::TransactionType::REMOVE))
-                    {
-                        return 1;
-                    }
+                    configOptional = getDatabaseConfig(configName, operationType);
+                    consoleWriter_.printWarning(
+                        "no matching device for config '" + configName.string() + "' found!");
+
+                }
+
+                config_ = configOptional?std::make_unique<Config>(configOptional.value()):nullptr;
+                if (!config_)
+                {
+                    consoleWriter_.printError("config '" + configName.string() + "' does not exist!");
+                    return 1;
+                }
+
+
+                if (!performTransaction(*config_, MHWD::TransactionType::INSTALL))
+                {
+                    return 1;
+                }
+            }
+            else if (arguments_.REMOVE)
+            {
+                auto configOptional = getInstalledConfig(configName.string(), operationType);
+
+                config_ = configOptional?std::make_unique<Config>(configOptional.value()):nullptr;
+
+                if (!config_)
+                {
+                    consoleWriter_.printError("config '" + configName.string() + "' is not installed!");
+                    return 1;
+                }
+
+                else if (!performTransaction(*config_, MHWD::TransactionType::REMOVE))
+                {
+                    return 1;
                 }
             }
         }
+
     }
     return 0;
 }

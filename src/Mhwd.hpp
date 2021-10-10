@@ -25,17 +25,13 @@
 #ifndef MHWD_HPP_
 #define MHWD_HPP_
 
-#include <dirent.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-
 #include <cstdio>
 #include <cstdlib>
 #include <memory>
 #include <string>
 #include <vector>
 #include <optional>
+#include <filesystem>
 
 #include "Config.hpp"
 #include "const.h"
@@ -73,7 +69,7 @@ private:
     std::unique_ptr<Config> config_;
     Data data_;
     ConsoleWriter consoleWriter_;
-    std::vector<std::string> configs_;
+    std::vector<std::filesystem::path> configs_;
     std::string version_, year_;
 
     bool performTransaction(Config& config, MHWD::TransactionType type);
