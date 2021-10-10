@@ -1060,10 +1060,14 @@ int Mhwd::launch(int argc, char *argv[])
                 }
                 else if (arguments_.INSTALL)
                 {
-                    auto configOptional = getAvailableConfig((*configName), operationType);
+                    auto configOptional = getAvailableConfig(*configName, operationType);
 
                     if(!configOptional){
-                        configOptional = getDatabaseConfig((*configName), operationType);
+
+                        configOptional = getDatabaseConfig(*configName, operationType);
+                        consoleWriter_.printWarning(
+                            "no matching device for config '" + (*configName) + "' found!");
+
                     }
 
                     config_ = configOptional?std::make_unique<Config>(configOptional.value()):nullptr;
@@ -1071,11 +1075,6 @@ int Mhwd::launch(int argc, char *argv[])
                     {
                         consoleWriter_.printError("config '" + (*configName) + "' does not exist!");
                         return 1;
-                    }
-                    else
-                    {
-                        consoleWriter_.printWarning(
-                            "no matching device for config '" + (*configName) + "' found!");
                     }
 
 
