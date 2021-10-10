@@ -32,6 +32,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <filesystem>
+#include <set>
 
 #include "Config.hpp"
 #include "const.h"
@@ -84,7 +86,7 @@ private:
     void setMatchingConfig(std::shared_ptr<Config> config, const std::vector<std::shared_ptr<Device>>& devices,
             bool setAsInstalled);
     void addConfigSorted(std::vector<std::shared_ptr<Config>>& configs, std::shared_ptr<Config> newConfig);
-    std::vector<std::string> getRecursiveDirectoryFileList(const std::string& directoryPath,
+    std::set<std::filesystem::path> getRecursiveDirectoryFileList(const std::filesystem::path& directoryPath,
             const std::string& onlyFilename = "");
 
     Vita::string getRightConfigPath(const Vita::string& str, const Vita::string& baseConfigPath);

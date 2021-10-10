@@ -69,7 +69,7 @@ void Data::updateInstalledConfigData()
 
 void Data::fillInstalledConfigs(const std::string& type)
 {
-    std::vector<std::string> configPaths;
+    std::set<std::filesystem::path> configPaths;
     std::vector<std::shared_ptr<Config>>* configs;
 
     if ("USB" == type)
@@ -207,34 +207,36 @@ std::vector<std::shared_ptr<Config>> Data::getAllDependenciesToInstall(
 }
 
 void Data::getAllDependenciesToInstall(std::shared_ptr<Config> config,
-        std::vector<std::shared_ptr<Config>>& installedConfigs,
-        std::vector<std::shared_ptr<Config>> *dependencies)
+                                       std::vector<std::shared_ptr<Config>>& installedConfigs,
+                                       std::vector<std::shared_ptr<Config>> *dependencies)
 {
+
+
+
     for (const auto& configDependency : config->dependencies_)
     {
-        auto found = std::find_if(installedConfigs.begin(), installedConfigs.end(),
-                [configDependency](const std::shared_ptr<Config>& config) -> bool {
-                    return (config->name_ == configDependency);
-                }) != installedConfigs.end();
+        auto findConfig = [configDependency](const auto& config){
+            return config->name_ ==  configDependency;
+        };
+        auto found = std::find_if(installedConfigs.begin(), installedConfigs.end(), findConfig) != installedConfigs.end();
 
-        if (!found)
+        if (found)
         {
-            found = std::find_if(dependencies->begin(), dependencies->end(),
-                    [configDependency](const std::shared_ptr<Config>& config) -> bool {
-                        return (config->name_ == configDependency);
-                    }) != dependencies->end();
+            return;
+        }
+        found = std::find_if(dependencies->begin(), dependencies->end(), findConfig) != dependencies->end();
 
-            if (!found)
-            {
-                // Add to vector and check for further subdepends...
-                std::shared_ptr<Config> dependconfig {
-                    getDatabaseConfig(configDependency, config->type_)};
-                if (nullptr != dependconfig)
-                {
-                    dependencies->emplace_back(dependconfig);
-                    getAllDependenciesToInstall(dependconfig, installedConfigs, dependencies);
-                }
-            }
+        if (found)
+        {
+            return;
+        }
+        // Add to vector and check for further subdepends...
+        std::shared_ptr<Config> dependconfig {
+                                             getDatabaseConfig(configDependency, config->type_)};
+        if (nullptr != dependconfig)
+        {
+            dependencies->emplace_back(dependconfig);
+            getAllDependenciesToInstall(dependconfig, installedConfigs, dependencies);
         }
     }
 }
@@ -386,7 +388,7 @@ void Data::fillDevices(hw_item hw, std::vector<std::shared_ptr<Device>>& devices
 
 void Data::fillAllConfigs(const std::string& type)
 {
-    std::vector<std::string> configPaths;
+    std::set<std::filesystem::path> configPaths;
     std::vector<std::shared_ptr<Config>>* configs;
 
     if ("USB" == type)
@@ -416,45 +418,21 @@ void Data::fillAllConfigs(const std::string& type)
     }
 }
 
-std::vector<std::string> Data::getRecursiveDirectoryFileList(const std::string& directoryPath,
+std::set<std::filesystem::path> Data::getRecursiveDirectoryFileList(const std::filesystem::path& directoryPath,
         const std::string& onlyFilename)
 {
-    std::vector<std::string> list;
-    struct dirent *dir = nullptr;
-    DIR* d = opendir(directoryPath.c_str());
-    if (d)
-    {
-        while (nullptr != (dir = readdir(d)))
+    std::set<std::filesystem::path> list;
+
+    auto noFilter = onlyFilename.empty();
+
+    for(const auto& file : std::filesystem::recursive_directory_iterator(directoryPath)){
+        if (file.is_regular_file() &&
+            (noFilter || onlyFilename == file.path().filename()))
         {
-            const std::string filename {dir->d_name};
-            if (("." != filename) && (".." != filename) && ("" != filename))
-            {
-                std::string filepath {directoryPath + "/" + filename};
-                struct stat filestatus;
-                lstat(filepath.c_str(), &filestatus);
-
-                if (S_ISREG(filestatus.st_mode) &&
-                        (onlyFilename.empty() || (onlyFilename == filename)))
-                {
-                    list.push_back(filepath);
-                }
-                else if (S_ISDIR(filestatus.st_mode))
-                {
-                    std::vector<std::string> templist = getRecursiveDirectoryFileList(filepath,
-                            onlyFilename);
-
-                    for (auto&& iterator = templist.begin();
-                            iterator != templist.end(); iterator++)
-                    {
-                        list.push_back((*iterator));
-                    }
-                }
-            }
+            list.emplace(file.path());
         }
-
-        closedir(d);
     }
-    delete dir;
+
     return list;
 }
 
