@@ -26,8 +26,6 @@
 #define DATA_HPP_
 
 #include <hd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 #include <memory>
 #include <string>
@@ -56,8 +54,8 @@ public:
     };
 
     Environment environment;
-    std::vector<std::shared_ptr<Device>> USBDevices;
-    std::vector<std::shared_ptr<Device>> PCIDevices;
+    std::vector<Device> USBDevices;
+    std::vector<Device> PCIDevices;
     std::vector<Config> installedUSBConfigs;
     std::vector<Config> installedPCIConfigs;
     std::vector<Config> allUSBConfigs;
@@ -65,7 +63,7 @@ public:
     std::vector<Config> invalidConfigs;
 
     void updateInstalledConfigData();
-    void getAllDevicesOfConfig(const Config& config, std::vector<std::shared_ptr<Device>>& foundDevices);
+    void getAllDevicesOfConfig(const Config& config, std::vector<Device>& foundDevices);
 
     std::vector<Config> getAllDependenciesToInstall(const Config&  config);
     void getAllDependenciesToInstall(const Config& config,
@@ -77,14 +75,14 @@ public:
     std::vector<Config> getAllLocalRequirements(const Config& config);
 
 private:
-    void getAllDevicesOfConfig(const std::vector<std::shared_ptr<Device>>& devices,
-            const Config& config, std::vector<std::shared_ptr<Device>>& foundDevices);
+    void getAllDevicesOfConfig(const std::vector<Device>& devices,
+            const Config& config, std::vector<Device>& foundDevices);
     void fillInstalledConfigs(std::vector<Config>& configs, const std::set<std::filesystem::path>& configPaths, const std::string& type);
-    void fillDevices(hw_item hw, std::vector<std::shared_ptr<Device>>& devices);
+    void fillDevices(hw_item hw, std::vector<Device>& devices);
     void fillAllConfigs(const std::string& type);
-    void setMatchingConfigs(const std::vector<std::shared_ptr<Device>>& devices,
+    void setMatchingConfigs(const std::vector<Device>& devices,
             std::vector<Config>& configs, bool setAsInstalled);
-    void setMatchingConfig(const Config& config, const std::vector<std::shared_ptr<Device>>& devices,
+    void setMatchingConfig(const Config& config, const std::vector<Device>& devices,
             bool setAsInstalled);
     void addConfigSorted(std::vector<Config>& configs, const Config& newConfig);
     std::set<std::filesystem::path> getRecursiveDirectoryFileList(const std::filesystem::path& directoryPath,

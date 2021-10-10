@@ -112,7 +112,7 @@ void ConsoleWriter::printVersion(const std::string& versionMhwd, const std::stri
             << std::endl;
 }
 
-void ConsoleWriter::listDevices(const std::vector<std::shared_ptr<Device>>& devices, const std::string& type) const
+void ConsoleWriter::listDevices(const std::vector<Device>& devices, const std::string& type) const
 {
     if (devices.empty())
     {
@@ -131,12 +131,12 @@ void ConsoleWriter::listDevices(const std::vector<std::shared_ptr<Device>>& devi
         printLine();
         for (const auto& device : devices)
         {
-            std::cout << std::setw(30) << device->className_
-                    << std::setw(15) << device->sysfsBusID_
-                    << std::setw(8) << device->classID_
-                    << std::setw(8) << device->vendorID_
-                    << std::setw(8) << device->deviceID_
-                    << std::setw(10) << device->availableConfigs_.size() << std::endl;
+            std::cout << std::setw(30) << device.className_
+                    << std::setw(15) << device.sysfsBusID_
+                    << std::setw(8) << device.classID_
+                    << std::setw(8) << device.vendorID_
+                    << std::setw(8) << device.deviceID_
+                    << std::setw(10) << device.availableConfigs_.size() << std::endl;
         }
         std::cout << std::endl << std::endl;
     }
@@ -162,13 +162,13 @@ void ConsoleWriter::listConfigs(const std::vector<Config>& configs, const std::s
 }
 
 void ConsoleWriter::printAvailableConfigsInDetail(const std::string& deviceType,
-        const std::vector<std::shared_ptr<Device>>& devices) const
+        const std::vector<Device>& devices) const
 {
     bool configFound = false;
 
     for (const auto& device : devices)
     {
-        if (device->availableConfigs_.empty() && device->installedConfigs_.empty())
+        if (device.availableConfigs_.empty() && device.installedConfigs_.empty())
         {
             continue;
         }
@@ -178,25 +178,25 @@ void ConsoleWriter::printAvailableConfigsInDetail(const std::string& deviceType,
 
             printLine();
             printStatus(
-                    deviceType + " Device: " + device->sysfsID_ + " (" + device->classID_ + ":"
-                    + device->vendorID_ + ":" + device->deviceID_ + ")");
-            std::cout << "  " << device->className_
-                    << " " << device->vendorName_
-                    << " " << device->deviceName_ << std::endl;
+                    deviceType + " Device: " + device.sysfsID_ + " (" + device.classID_ + ":"
+                    + device.vendorID_ + ":" + device.deviceID_ + ")");
+            std::cout << "  " << device.className_
+                    << " " << device.vendorName_
+                    << " " << device.deviceName_ << std::endl;
             printLine();
-            if (!device->installedConfigs_.empty())
+            if (!device.installedConfigs_.empty())
             {
                 std::cout << "  > INSTALLED:\n\n";
-                for (auto&& installedConfig : device->installedConfigs_)
+                for (auto&& installedConfig : device.installedConfigs_)
                 {
                     printConfigDetails(installedConfig);
                 }
                 std::cout << "\n\n";
             }
-            if (!device->availableConfigs_.empty())
+            if (!device.availableConfigs_.empty())
             {
                 std::cout << "  > AVAILABLE:\n\n";
-                for (auto&& availableConfig : device->availableConfigs_)
+                for (auto&& availableConfig : device.availableConfigs_)
                 {
                     printConfigDetails(availableConfig);
                 }

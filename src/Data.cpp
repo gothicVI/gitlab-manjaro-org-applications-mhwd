@@ -23,8 +23,6 @@
  */
 
 #include "Data.hpp"
-
-#include <dirent.h>
 #include <fnmatch.h>
 
 #include <algorithm>
@@ -48,12 +46,12 @@ void Data::updateInstalledConfigData()
 
     for (auto& PCIDevice : PCIDevices)
     {
-        PCIDevice->installedConfigs_.clear();
+        PCIDevice.installedConfigs_.clear();
     }
 
     for (auto& USBDevice : USBDevices)
     {
-        USBDevice->installedConfigs_.clear();
+        USBDevice.installedConfigs_.clear();
     }
 
     installedPCIConfigs.clear();
@@ -86,9 +84,9 @@ void Data::fillInstalledConfigs(std::vector<Config>& configs,
     }
 }
 
-void Data::getAllDevicesOfConfig(const Config& config, std::vector<std::shared_ptr<Device>>& foundDevices)
+void Data::getAllDevicesOfConfig(const Config& config, std::vector<Device>& foundDevices)
 {
-    std::vector<std::shared_ptr<Device>> devices;
+    std::vector<Device> devices;
 
     if ("USB" == config.type_)
     {
@@ -109,9 +107,9 @@ bool containsFnmatch(TInputIterator begin, TInputIterator end, const std::string
     }) != end;
 }
 
-void Data::getAllDevicesOfConfig(const std::vector<std::shared_ptr<Device>>& devices,
+void Data::getAllDevicesOfConfig(const std::vector<Device>& devices,
         const Config& config,
-        std::vector<std::shared_ptr<Device>>& foundDevices)
+        std::vector<Device>& foundDevices)
 {
     foundDevices.clear();
 
@@ -122,42 +120,42 @@ void Data::getAllDevicesOfConfig(const std::vector<std::shared_ptr<Device>>& dev
         for (const auto& device : devices)
         {
             // Check class ids
-            bool found = containsFnmatch(hwdId.classIDs.begin(), hwdId.classIDs.end(), device->classID_);
+            bool found = containsFnmatch(hwdId.classIDs.begin(), hwdId.classIDs.end(), device.classID_);
 
             if (!found)
             {
                 continue;
             }
             // Check blacklisted class ids
-            found = containsFnmatch(hwdId.blacklistedClassIDs.begin(), hwdId.blacklistedClassIDs.end(), device->classID_);
+            found = containsFnmatch(hwdId.blacklistedClassIDs.begin(), hwdId.blacklistedClassIDs.end(), device.classID_);
 
             if (found)
             {
                 continue;
             }
             // Check vendor ids
-            found = containsFnmatch(hwdId.vendorIDs.begin(), hwdId.vendorIDs.end(), device->vendorID_);
+            found = containsFnmatch(hwdId.vendorIDs.begin(), hwdId.vendorIDs.end(), device.vendorID_);
 
             if (!found)
             {
                 continue;
             }
             // Check blacklisted vendor ids
-            found = containsFnmatch(hwdId.blacklistedVendorIDs.begin(), hwdId.blacklistedVendorIDs.end(), device->vendorID_);
+            found = containsFnmatch(hwdId.blacklistedVendorIDs.begin(), hwdId.blacklistedVendorIDs.end(), device.vendorID_);
 
             if (found)
             {
                 continue;
             }
             // Check device ids
-            found = containsFnmatch(hwdId.deviceIDs.begin(), hwdId.deviceIDs.end(), device->deviceID_);
+            found = containsFnmatch(hwdId.deviceIDs.begin(), hwdId.deviceIDs.end(), device.deviceID_);
 
             if (!found)
             {
                 continue;
             }
             // Check blacklisted device ids
-            found = containsFnmatch(hwdId.blacklistedDeviceIDs.begin(), hwdId.blacklistedDeviceIDs.end(), device->deviceID_);
+            found = containsFnmatch(hwdId.blacklistedDeviceIDs.begin(), hwdId.blacklistedDeviceIDs.end(), device.deviceID_);
 
             if (!found)
             {
@@ -344,26 +342,25 @@ std::vector<Config> Data::getAllLocalRequirements(const Config& config)
     return requirements;
 }
 
-void Data::fillDevices(hw_item hw, std::vector<std::shared_ptr<Device>>& devices)
+void Data::fillDevices(hw_item hw, std::vector<Device>& devices)
 {
     // Get the hardware devices
     std::unique_ptr<hd_data_t> hd_data{new hd_data_t()};
     hd_t *hd = hd_list(hd_data.get(), hw, 1, nullptr);
 
-    std::unique_ptr<Device> device;
     for (hd_t *hdIter = hd; hdIter; hdIter = hdIter->next)
     {
-        device.reset(new Device());
-        device->type_ = (hw == hw_usb ? "USB" : "PCI");
-        device->classID_ = from_Hex(hdIter->base_class.id, 2) + from_Hex(hdIter->sub_class.id, 2).toLower();
-        device->vendorID_ = from_Hex(hdIter->vendor.id, 4).toLower();
-        device->deviceID_ = from_Hex(hdIter->device.id, 4).toLower();
-        device->className_ = from_CharArray(hdIter->base_class.name);
-        device->vendorName_ = from_CharArray(hdIter->vendor.name);
-        device->deviceName_ = from_CharArray(hdIter->device.name);
-        device->sysfsBusID_ = from_CharArray(hdIter->sysfs_bus_id);
-        device->sysfsID_ = from_CharArray(hdIter->sysfs_id);
-        devices.emplace_back(device.release());
+        Device device;
+        device.type_ = (hw == hw_usb ? "USB" : "PCI");
+        device.classID_ = from_Hex(hdIter->base_class.id, 2) + from_Hex(hdIter->sub_class.id, 2).toLower();
+        device.vendorID_ = from_Hex(hdIter->vendor.id, 4).toLower();
+        device.deviceID_ = from_Hex(hdIter->device.id, 4).toLower();
+        device.className_ = from_CharArray(hdIter->base_class.name);
+        device.vendorName_ = from_CharArray(hdIter->vendor.name);
+        device.deviceName_ = from_CharArray(hdIter->device.name);
+        device.sysfsBusID_ = from_CharArray(hdIter->sysfs_bus_id);
+        device.sysfsID_ = from_CharArray(hdIter->sysfs_id);
+        devices.emplace_back(std::move(device));
     }
 
     hd_free_hd_list(hd);
@@ -437,12 +434,12 @@ void Data::updateConfigData()
 {
     for (auto& PCIDevice : PCIDevices)
     {
-        PCIDevice->availableConfigs_.clear();
+        PCIDevice.availableConfigs_.clear();
     }
 
     for (auto& USBDevice : USBDevices)
     {
-        USBDevice->availableConfigs_.clear();
+        USBDevice.availableConfigs_.clear();
     }
 
     allPCIConfigs.clear();
@@ -457,7 +454,7 @@ void Data::updateConfigData()
     updateInstalledConfigData();
 }
 
-void Data::setMatchingConfigs(const std::vector<std::shared_ptr<Device>>& devices,
+void Data::setMatchingConfigs(const std::vector<Device>& devices,
         std::vector<Config>& configs, bool setAsInstalled)
 {
     for (auto& config : configs)
@@ -467,9 +464,9 @@ void Data::setMatchingConfigs(const std::vector<std::shared_ptr<Device>>& device
 }
 
 void Data::setMatchingConfig(const Config& config,
-        const std::vector<std::shared_ptr<Device>>& devices, bool setAsInstalled)
+        const std::vector<Device>& devices, bool setAsInstalled)
 {
-    std::vector<std::shared_ptr<Device>> foundDevices;
+    std::vector<Device> foundDevices;
 
     getAllDevicesOfConfig(devices, config, foundDevices);
 
@@ -478,11 +475,11 @@ void Data::setMatchingConfig(const Config& config,
     {
         if (setAsInstalled)
         {
-            addConfigSorted(foundDevice->installedConfigs_, config);
+            addConfigSorted(foundDevice.installedConfigs_, config);
         }
         else
         {
-            addConfigSorted(foundDevice->availableConfigs_, config);
+            addConfigSorted(foundDevice.availableConfigs_, config);
         }
     }
 }

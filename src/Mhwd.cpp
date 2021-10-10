@@ -215,7 +215,7 @@ std::optional<Config> Mhwd::getDatabaseConfig(const std::string& configName,
 std::optional<Config> Mhwd::getAvailableConfig(const std::string& configName,
         const std::string& configType)
 {
-    std::vector<std::shared_ptr<Device>> *devices;
+    std::vector<Device> *devices;
 
     // Get the right devices
     if ("USB" == configType)
@@ -230,13 +230,13 @@ std::optional<Config> Mhwd::getAvailableConfig(const std::string& configName,
     for (auto&& device = devices->begin(); device != devices->end();
             ++device)
     {
-        if ((*device)->availableConfigs_.empty())
+        if ((*device).availableConfigs_.empty())
         {
             continue;
         }
         else
         {
-            auto& availableConfigs = (*device)->availableConfigs_;
+            auto& availableConfigs = (*device).availableConfigs_;
             auto availableConfig = std::find_if(availableConfigs.begin(), availableConfigs.end(),
                     [configName](const auto& config){
                         return config.name_ == configName;
@@ -423,8 +423,8 @@ bool Mhwd::runScript(const Config& config, MHWD::TransactionType operationType)
     cmd += " --config \"" + config.configPath_ + "\"";
 
     // Set all config devices as argument
-    std::vector<std::shared_ptr<Device>> foundDevices;
-    std::vector<std::shared_ptr<Device>> devices;
+    std::vector<Device> foundDevices;
+    std::vector<Device> devices;
     data_.getAllDevicesOfConfig(config, foundDevices);
 
     for (auto&& foundDevice = foundDevices.begin();
@@ -435,8 +435,8 @@ bool Mhwd::runScript(const Config& config, MHWD::TransactionType operationType)
         // Check if already in list
         for (auto&& dev = devices.begin(); dev != devices.end(); ++dev)
         {
-            if ((*foundDevice)->sysfsBusID_ == (*dev)->sysfsBusID_
-                    && (*foundDevice)->sysfsID_ == (*dev)->sysfsID_)
+            if ((*foundDevice).sysfsBusID_ == (*dev).sysfsBusID_
+                    && (*foundDevice).sysfsID_ == (*dev).sysfsID_)
             {
                 found = true;
                 break;
@@ -445,13 +445,13 @@ bool Mhwd::runScript(const Config& config, MHWD::TransactionType operationType)
 
         if (!found)
         {
-            devices.push_back(std::shared_ptr<Device>{*foundDevice});
+            devices.push_back(*foundDevice);
         }
     }
 
     for (auto&& dev = devices.begin(); dev != devices.end(); ++dev)
     {
-        Vita::string busID = (*dev)->sysfsBusID_;
+        Vita::string busID = (*dev).sysfsBusID_;
 
         if ("PCI" == config.type_)
         {
@@ -467,7 +467,7 @@ bool Mhwd::runScript(const Config& config, MHWD::TransactionType operationType)
             }
         }
 
-        cmd += " --device \"" + (*dev)->classID_ + "|" + (*dev)->vendorID_ + "|" + (*dev)->deviceID_
+        cmd += " --device \"" + (*dev).classID_ + "|" + (*dev).vendorID_ + "|" + (*dev).deviceID_
                 + "|" + busID + "\"";
     }
 
@@ -856,12 +856,12 @@ int Mhwd::launch(int argc, char *argv[])
         {
             for (auto&& PCIDevice : data_.PCIDevices)
             {
-                if (!PCIDevice->availableConfigs_.empty())
+                if (!PCIDevice.availableConfigs_.empty())
                 {
-                    consoleWriter_.listConfigs(PCIDevice->availableConfigs_,
-                            PCIDevice->sysfsBusID_ + " (" + PCIDevice->classID_ + ":"
-                                    + PCIDevice->vendorID_ + ":" + PCIDevice->deviceID_ + ") "
-                                    + PCIDevice->className_ + " " + PCIDevice->vendorName_ + ":");
+                    consoleWriter_.listConfigs(PCIDevice.availableConfigs_,
+                            PCIDevice.sysfsBusID_ + " (" + PCIDevice.classID_ + ":"
+                                    + PCIDevice.vendorID_ + ":" + PCIDevice.deviceID_ + ") "
+                                    + PCIDevice.className_ + " " + PCIDevice.vendorName_ + ":");
                 }
             }
         }
@@ -878,12 +878,12 @@ int Mhwd::launch(int argc, char *argv[])
         {
             for (auto&& USBdevice : data_.USBDevices)
             {
-                if (!USBdevice->availableConfigs_.empty())
+                if (!USBdevice.availableConfigs_.empty())
                 {
-                    consoleWriter_.listConfigs(USBdevice->availableConfigs_,
-                            USBdevice->sysfsBusID_ + " (" + USBdevice->classID_ + ":"
-                            + USBdevice->vendorID_ + ":" + USBdevice->deviceID_ + ") "
-                            + USBdevice->className_ + " " + USBdevice->vendorName_ + ":");
+                    consoleWriter_.listConfigs(USBdevice.availableConfigs_,
+                            USBdevice.sysfsBusID_ + " (" + USBdevice.classID_ + ":"
+                            + USBdevice.vendorID_ + ":" + USBdevice.deviceID_ + ") "
+                            + USBdevice.className_ + " " + USBdevice.vendorName_ + ":");
                 }
             }
         }
@@ -916,7 +916,7 @@ int Mhwd::launch(int argc, char *argv[])
     // Auto configuration
     if (arguments_.AUTOCONFIGURE)
     {
-        std::vector<std::shared_ptr<Device>> *devices;
+        std::vector<Device> *devices;
         std::vector<Config> *installedConfigs;
 
         if ("USB" == operationType)
@@ -932,7 +932,7 @@ int Mhwd::launch(int argc, char *argv[])
         bool foundDevice = false;
         for (auto&& device : *devices)
         {
-            if (device->classID_ != autoConfigureClassID)
+            if (device.classID_ != autoConfigureClassID)
             {
                 continue;
             }
@@ -941,7 +941,7 @@ int Mhwd::launch(int argc, char *argv[])
                 foundDevice = true;
                 std::optional<Config> config;
 
-                for (auto&& availableConfig : device->availableConfigs_)
+                for (auto&& availableConfig : device.availableConfigs_)
                 {
                     if (autoConfigureNonFreeDriver || availableConfig.freedriver_)
                     {
@@ -953,10 +953,10 @@ int Mhwd::launch(int argc, char *argv[])
                 if (!config)
                 {
                     consoleWriter_.printWarning(
-                            "No config found for device: " + device->sysfsBusID_ + " ("
-                                    + device->classID_ + ":" + device->vendorID_ + ":"
-                                    + device->deviceID_ + ") " + device->className_ + " "
-                                    + device->vendorName_ + " " + device->deviceName_);
+                            "No config found for device: " + device.sysfsBusID_ + " ("
+                                    + device.classID_ + ":" + device.vendorID_ + ":"
+                                    + device.deviceID_ + ") " + device.className_ + " "
+                                    + device.vendorName_ + " " + device.deviceName_);
                     continue;
                 }
                 else
@@ -975,19 +975,19 @@ int Mhwd::launch(int argc, char *argv[])
                     {
                         consoleWriter_.printStatus(
                                 "Skipping already installed config '" + config->name_ +
-                                "' for device: " + device->sysfsBusID_ + " (" +
-                                device->classID_ + ":" + device->vendorID_ + ":" +
-                                device->deviceID_ + ") " + device->className_ + " " +
-                                device->vendorName_ + " " + device->deviceName_);
+                                "' for device: " + device.sysfsBusID_ + " (" +
+                                device.classID_ + ":" + device.vendorID_ + ":" +
+                                device.deviceID_ + ") " + device.className_ + " " +
+                                device.vendorName_ + " " + device.deviceName_);
                     }
                     else
                     {
                         consoleWriter_.printStatus(
                                 "Using config '" + config->name_ + "' for device: " +
-                                device->sysfsBusID_ + " (" + device->classID_ + ":" +
-                                device->vendorID_ + ":" + device->deviceID_ + ") " +
-                                device->className_ + " " + device->vendorName_ + " " +
-                                device->deviceName_);
+                                device.sysfsBusID_ + " (" + device.classID_ + ":" +
+                                device.vendorID_ + ":" + device.deviceID_ + ") " +
+                                device.className_ + " " + device.vendorName_ + " " +
+                                device.deviceName_);
                     }
 
                     bool alreadyInList = std::find(configs_.begin(), configs_.end(), config->name_) != configs_.end();
