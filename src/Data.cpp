@@ -121,61 +121,67 @@ void Data::getAllDevicesOfConfig(const std::vector<std::shared_ptr<Device>>& dev
     foundDevices.clear();
 
     for (auto&& hwdID = config->hwdIDs_.begin();
-            hwdID != config->hwdIDs_.end(); ++hwdID)
+         hwdID != config->hwdIDs_.end(); ++hwdID)
     {
         bool foundDevice = false;
         // Check all devices
         for (auto&& i_device = devices.begin(); i_device != devices.end();
-                ++i_device)
+             ++i_device)
         {
             // Check class ids
             bool found = std::find_if(hwdID->classIDs.begin(), hwdID->classIDs.end(), [i_device](const std::string& classID){
-                                return !fnmatch(classID.c_str(), (*i_device)->classID_.c_str(), FNM_CASEFOLD);
-                            }) != hwdID->classIDs.end();
+                             return !fnmatch(classID.c_str(), (*i_device)->classID_.c_str(), FNM_CASEFOLD);
+                         }) != hwdID->classIDs.end();
+
+            if (!found)
+            {
+                continue;
+            }
+            // Check blacklisted class ids
+            found = std::find_if(hwdID->blacklistedClassIDs.begin(), hwdID->blacklistedClassIDs.end(), [i_device](const std::string& blacklistedClassID){
+                        return !fnmatch(blacklistedClassID.c_str(), (*i_device)->classID_.c_str(), FNM_CASEFOLD);
+                    }) != hwdID->blacklistedClassIDs.end();
 
             if (found)
             {
-                // Check blacklisted class ids
-                found = std::find_if(hwdID->blacklistedClassIDs.begin(), hwdID->blacklistedClassIDs.end(), [i_device](const std::string& blacklistedClassID){
-                                return !fnmatch(blacklistedClassID.c_str(), (*i_device)->classID_.c_str(), FNM_CASEFOLD);
-                            }) != hwdID->blacklistedClassIDs.end();
+                continue;
+            }
+            // Check vendor ids
+            found = std::find_if(hwdID->vendorIDs.begin(), hwdID->vendorIDs.end(), [i_device](const std::string& vendorID){
+                        return !fnmatch(vendorID.c_str(), (*i_device)->vendorID_.c_str(), FNM_CASEFOLD);
+                    }) != hwdID->vendorIDs.end();
 
-                if (!found)
-                {
-                    // Check vendor ids
-                    found = std::find_if(hwdID->vendorIDs.begin(), hwdID->vendorIDs.end(), [i_device](const std::string& vendorID){
-                                    return !fnmatch(vendorID.c_str(), (*i_device)->vendorID_.c_str(), FNM_CASEFOLD);
-                                }) != hwdID->vendorIDs.end();
+            if (!found)
+            {
+                continue;
+            }
+            // Check blacklisted vendor ids
+            found = std::find_if(hwdID->blacklistedVendorIDs.begin(), hwdID->blacklistedVendorIDs.end(), [i_device](const std::string& blacklistedVendorID){
+                        return !fnmatch(blacklistedVendorID.c_str(), (*i_device)->vendorID_.c_str(), FNM_CASEFOLD);
+                    }) != hwdID->blacklistedVendorIDs.end();
 
-                    if (found)
-                    {
-                        // Check blacklisted vendor ids
-                        found = std::find_if(hwdID->blacklistedVendorIDs.begin(), hwdID->blacklistedVendorIDs.end(), [i_device](const std::string& blacklistedVendorID){
-                                        return !fnmatch(blacklistedVendorID.c_str(), (*i_device)->vendorID_.c_str(), FNM_CASEFOLD);
-                                    }) != hwdID->blacklistedVendorIDs.end();
+            if (found)
+            {
+                continue;
+            }
+            // Check device ids
+            found = std::find_if(hwdID->deviceIDs.begin(), hwdID->deviceIDs.end(), [i_device](const std::string& deviceID){
+                        return !fnmatch(deviceID.c_str(), (*i_device)->deviceID_.c_str(), FNM_CASEFOLD);
+                    }) != hwdID->deviceIDs.end();
 
-                        if (!found)
-                        {
-                            // Check device ids
-                            found = std::find_if(hwdID->deviceIDs.begin(), hwdID->deviceIDs.end(), [i_device](const std::string& deviceID){
-                                            return !fnmatch(deviceID.c_str(), (*i_device)->deviceID_.c_str(), FNM_CASEFOLD);
-                                        }) != hwdID->deviceIDs.end();
+            if (!found)
+            {
+                continue;
+            }
+            // Check blacklisted device ids
+            found = std::find_if(hwdID->blacklistedDeviceIDs.begin(), hwdID->blacklistedDeviceIDs.end(), [i_device](const std::string& blacklistedDeviceID){
+                        return !fnmatch(blacklistedDeviceID.c_str(), (*i_device)->deviceID_.c_str(), FNM_CASEFOLD);
+                    }) != hwdID->blacklistedDeviceIDs.end();
 
-                            if (found)
-                            {
-                                // Check blacklisted device ids
-                                found = std::find_if(hwdID->blacklistedDeviceIDs.begin(), hwdID->blacklistedDeviceIDs.end(), [i_device](const std::string& blacklistedDeviceID){
-                                                return !fnmatch(blacklistedDeviceID.c_str(), (*i_device)->deviceID_.c_str(), FNM_CASEFOLD);
-                                            }) != hwdID->blacklistedDeviceIDs.end();
-                                if (!found)
-                                {
-                                    foundDevice = true;
-                                    foundDevices.push_back(*i_device);
-                                }
-                            }
-                        }
-                    }
-                }
+            if (!found)
+            {
+                foundDevice = true;
+                foundDevices.push_back(*i_device);
             }
         }
 
