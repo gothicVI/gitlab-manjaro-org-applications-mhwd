@@ -142,7 +142,7 @@ void ConsoleWriter::listDevices(const std::vector<std::shared_ptr<Device>>& devi
     }
 }
 
-void ConsoleWriter::listConfigs(const std::vector<std::shared_ptr<Config>>& configs, const std::string& header) const
+void ConsoleWriter::listConfigs(const std::vector<Config>& configs, const std::string& header) const
 {
     printStatus(header);
     printLine();
@@ -153,10 +153,10 @@ void ConsoleWriter::listConfigs(const std::vector<std::shared_ptr<Config>>& conf
     printLine();
     for (const auto& config : configs)
     {
-        std::cout << std::setw(22) << config->name_
-                << std::setw(22) << config->version_
-                << std::setw(20) << std::boolalpha << config->freedriver_
-                << std::setw(15) << config->type_ << std::endl;
+        std::cout << std::setw(22) << config.name_
+                << std::setw(22) << config.version_
+                << std::setw(20) << std::boolalpha << config.freedriver_
+                << std::setw(15) << config.type_ << std::endl;
     }
     std::cout << std::endl << std::endl;
 }
@@ -189,7 +189,7 @@ void ConsoleWriter::printAvailableConfigsInDetail(const std::string& deviceType,
                 std::cout << "  > INSTALLED:\n\n";
                 for (auto&& installedConfig : device->installedConfigs_)
                 {
-                    printConfigDetails(*installedConfig);
+                    printConfigDetails(installedConfig);
                 }
                 std::cout << "\n\n";
             }
@@ -198,7 +198,7 @@ void ConsoleWriter::printAvailableConfigsInDetail(const std::string& deviceType,
                 std::cout << "  > AVAILABLE:\n\n";
                 for (auto&& availableConfig : device->availableConfigs_)
                 {
-                    printConfigDetails(*availableConfig);
+                    printConfigDetails(availableConfig);
                 }
                 std::cout << std::endl;
             }
@@ -212,7 +212,7 @@ void ConsoleWriter::printAvailableConfigsInDetail(const std::string& deviceType,
 }
 
 void ConsoleWriter::printInstalledConfigs(const std::string& deviceType,
-        const std::vector<std::shared_ptr<Config>>& installedConfigs) const
+        const std::vector<Config>& installedConfigs) const
 {
     if (installedConfigs.empty())
     {
@@ -222,7 +222,7 @@ void ConsoleWriter::printInstalledConfigs(const std::string& deviceType,
     {
         for (const auto& config : installedConfigs)
         {
-            printConfigDetails(*config);
+            printConfigDetails(config);
         }
         std::cout << std::endl;
     }

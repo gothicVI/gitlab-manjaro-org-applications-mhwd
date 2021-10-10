@@ -45,12 +45,12 @@ public:
     void printVersion(const std::string& versionMhwd, const std::string& yearCopy) const;
     void listDevices(const std::vector<std::shared_ptr<Device>>& devices,
             const std::string& typeOfDevice) const;
-    void listConfigs(const std::vector<std::shared_ptr<Config>>& configs,
+    void listConfigs(const std::vector<Config> &configs,
             const std::string& header) const;
     void printAvailableConfigsInDetail(const std::string& deviceType,
             const std::vector<std::shared_ptr<Device>>& devices) const;
     void printInstalledConfigs(const std::string& deviceType,
-            const std::vector<std::shared_ptr<Config>>& installedConfigs) const;
+            const std::vector<Config> &installedConfigs) const;
     void printConfigDetails(const Config& config) const;
     void printDeviceDetails(hw_item hw, FILE *f = stdout) const;
 private:

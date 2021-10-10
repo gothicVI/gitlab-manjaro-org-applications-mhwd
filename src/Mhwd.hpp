@@ -35,6 +35,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <optional>
 
 #include "Config.hpp"
 #include "const.h"
@@ -69,30 +70,30 @@ private:
         bool CUSTOM_INSTALL = false;
         bool AUTOCONFIGURE = false;
     } arguments_;
-    std::shared_ptr<Config> config_;
+    std::unique_ptr<Config> config_;
     Data data_;
     ConsoleWriter consoleWriter_;
     std::vector<std::string> configs_;
     std::string version_, year_;
 
-    bool performTransaction(std::shared_ptr<Config> config, MHWD::TransactionType type);
+    bool performTransaction(Config& config, MHWD::TransactionType type);
     bool isUserRoot() const;
     std::vector<std::string> checkEnvironment() const;
 
-    std::shared_ptr<Config> getInstalledConfig(const std::string& configName, const std::string& configType);
-    std::shared_ptr<Config> getDatabaseConfig(const std::string& configName, const std::string& configType);
-    std::shared_ptr<Config> getAvailableConfig(const std::string& configName, const std::string& configType);
+    std::optional<Config> getInstalledConfig(const std::string& configName, const std::string& configType);
+    std::optional<Config> getDatabaseConfig(const std::string& configName, const std::string& configType);
+    std::optional<Config> getAvailableConfig(const std::string& configName, const std::string& configType);
 
     MHWD::Status performTransaction(const Transaction& transaction);
     bool proceedWithInstallation(const std::string& input) const;
 
-    MHWD::Status installConfig(std::shared_ptr<Config> config);
-    MHWD::Status uninstallConfig(Config *config);
-    bool runScript(std::shared_ptr<Config> config, MHWD::TransactionType operationType);
+    MHWD::Status installConfig(const Config& config);
+    MHWD::Status uninstallConfig(const Config& config);
+    bool runScript(const Config& config, MHWD::TransactionType operationType);
     void tryToParseCmdLineOptions(int argc, char* argv[], bool& autoConfigureNonFreeDriver,
             std::string& operationType, std::string& autoConfigureClassID);
     bool optionsDontInterfereWithEachOther() const;
-    std::string gatherConfigContent(const std::vector<std::shared_ptr<Config>> & config) const;
+    std::string gatherConfigContent(const std::vector<Config> & config) const;
 };
 
 #endif /* MHWD_HPP_ */

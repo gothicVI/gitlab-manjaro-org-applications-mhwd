@@ -60,49 +60,37 @@ void Data::updateInstalledConfigData()
     installedUSBConfigs.clear();
 
     // Refill data
-    fillInstalledConfigs("PCI");
-    fillInstalledConfigs("USB");
+    fillInstalledConfigs(installedUSBConfigs, getRecursiveDirectoryFileList(MHWD_USB_DATABASE_DIR, MHWD_CONFIG_NAME), "USB");
+    fillInstalledConfigs(installedPCIConfigs, getRecursiveDirectoryFileList(MHWD_PCI_DATABASE_DIR, MHWD_CONFIG_NAME), "PCI");
 
     setMatchingConfigs(PCIDevices, installedPCIConfigs, true);
     setMatchingConfigs(USBDevices, installedUSBConfigs, true);
 }
 
-void Data::fillInstalledConfigs(const std::string& type)
+void Data::fillInstalledConfigs(std::vector<Config>& configs,
+                                const std::set<std::filesystem::path>& configPaths, const std::string& type)
 {
-    std::set<std::filesystem::path> configPaths;
-    std::vector<std::shared_ptr<Config>>* configs;
-
-    if ("USB" == type)
-    {
-        configs = &installedUSBConfigs;
-        configPaths = getRecursiveDirectoryFileList(MHWD_USB_DATABASE_DIR, MHWD_CONFIG_NAME);
-    }
-    else
-    {
-        configs = &installedPCIConfigs;
-        configPaths = getRecursiveDirectoryFileList(MHWD_PCI_DATABASE_DIR, MHWD_CONFIG_NAME);
-    }
 
     for (const auto& configPath : configPaths)
     {
-        Config *config = new Config(configPath, type);
+        Config config(configPath, type);
 
-        if (config->readConfigFile(configPath))
+        if (config.readConfigFile(configPath))
         {
-            configs->push_back(std::shared_ptr<Config>{config});
+            configs.push_back(std::move(config));
         }
         else
         {
-            invalidConfigs.push_back(std::shared_ptr<Config>{config});
+            invalidConfigs.push_back(std::move(config));
         }
     }
 }
 
-void Data::getAllDevicesOfConfig(std::shared_ptr<Config> config, std::vector<std::shared_ptr<Device>>& foundDevices)
+void Data::getAllDevicesOfConfig(const Config& config, std::vector<std::shared_ptr<Device>>& foundDevices)
 {
     std::vector<std::shared_ptr<Device>> devices;
 
-    if ("USB" == config->type_)
+    if ("USB" == config.type_)
     {
         devices = USBDevices;
     }
@@ -122,12 +110,12 @@ bool containsFnmatch(TInputIterator begin, TInputIterator end, const std::string
 }
 
 void Data::getAllDevicesOfConfig(const std::vector<std::shared_ptr<Device>>& devices,
-        std::shared_ptr<Config> config,
+        const Config& config,
         std::vector<std::shared_ptr<Device>>& foundDevices)
 {
     foundDevices.clear();
 
-    for (const auto& hwdId: config->hwdIDs_)
+    for (const auto& hwdId: config.hwdIDs_)
     {
         bool foundDevice = false;
         // Check all devices
@@ -186,13 +174,12 @@ void Data::getAllDevicesOfConfig(const std::vector<std::shared_ptr<Device>>& dev
     }
 }
 
-std::vector<std::shared_ptr<Config>> Data::getAllDependenciesToInstall(
-        std::shared_ptr<Config> config)
+std::vector<Config> Data::getAllDependenciesToInstall(const Config &config)
 {
-    std::vector<std::shared_ptr<Config>> depends;
-    std::vector<std::shared_ptr<Config>> installedConfigs;
+    std::vector<Config> depends;
+    std::vector<Config> installedConfigs;
 
-    if ("USB" == config->type_)
+    if ("USB" == config.type_)
     {
         installedConfigs = installedUSBConfigs;
     }
@@ -206,17 +193,17 @@ std::vector<std::shared_ptr<Config>> Data::getAllDependenciesToInstall(
     return depends;
 }
 
-void Data::getAllDependenciesToInstall(std::shared_ptr<Config> config,
-                                       std::vector<std::shared_ptr<Config>>& installedConfigs,
-                                       std::vector<std::shared_ptr<Config>> *dependencies)
+void Data::getAllDependenciesToInstall(const Config &config,
+                                       std::vector<Config>& installedConfigs,
+                                       std::vector<Config> *dependencies)
 {
 
 
 
-    for (const auto& configDependency : config->dependencies_)
+    for (const auto& configDependency : config.dependencies_)
     {
         auto findConfig = [configDependency](const auto& config){
-            return config->name_ ==  configDependency;
+            return config.name_ ==  configDependency;
         };
         auto found = std::find_if(installedConfigs.begin(), installedConfigs.end(), findConfig) != installedConfigs.end();
 
@@ -231,20 +218,19 @@ void Data::getAllDependenciesToInstall(std::shared_ptr<Config> config,
             return;
         }
         // Add to vector and check for further subdepends...
-        std::shared_ptr<Config> dependconfig {
-                                             getDatabaseConfig(configDependency, config->type_)};
-        if (nullptr != dependconfig)
+        auto dependconfig = getDatabaseConfig(configDependency, config.type_);
+        if (dependconfig)
         {
-            dependencies->emplace_back(dependconfig);
-            getAllDependenciesToInstall(dependconfig, installedConfigs, dependencies);
+            dependencies->emplace_back(dependconfig.value());
+            getAllDependenciesToInstall(dependconfig.value(), installedConfigs, dependencies);
         }
     }
 }
 
-std::shared_ptr<Config> Data::getDatabaseConfig(const std::string& configName,
+std::optional<Config> Data::getDatabaseConfig(const std::string& configName,
         const std::string& configType)
 {
-    std::vector<std::shared_ptr<Config>> allConfigs;
+    std::vector<Config> allConfigs;
 
     if ("USB" == configType)
     {
@@ -257,24 +243,22 @@ std::shared_ptr<Config> Data::getDatabaseConfig(const std::string& configName,
 
     for (auto& config : allConfigs)
     {
-
-        if (configName == config->name_)
+        if (configName == config.name_)
         {
-
             return config;
         }
     }
-
-    return nullptr;
+    
+    return std::nullopt;
 }
 
-std::vector<std::shared_ptr<Config>> Data::getAllLocalConflicts(std::shared_ptr<Config> config)
+std::vector<Config> Data::getAllLocalConflicts(const Config &config)
 {
-    std::vector<std::shared_ptr<Config>> conflicts;
-    std::vector<std::shared_ptr<Config>> dependencies = getAllDependenciesToInstall(config);
-    std::vector<std::shared_ptr<Config>> installedConfigs;
+    std::vector<Config> conflicts;
+    std::vector<Config> dependencies = getAllDependenciesToInstall(config);
+    std::vector<Config> installedConfigs;
 
-    if ("USB" == config->type_)
+    if ("USB" == config.type_)
     {
         installedConfigs = installedUSBConfigs;
     }
@@ -290,22 +274,22 @@ std::vector<std::shared_ptr<Config>> Data::getAllLocalConflicts(std::shared_ptr<
     for (const auto& dependency : dependencies)
     {
         // Loop thru all MHWD config conflicts
-        for (const auto& dependencyConflict : dependency->conflicts_)
+        for (const auto& dependencyConflict : dependency.conflicts_)
         {
             // Then loop thru all already installed configs. If there are no configs installed, there can not be a conflict
             for (auto& installedConfig : installedConfigs)
             {
                 // Skip yourself
-                if (installedConfig->name_ == config->name_)
+                if (installedConfig.name_ == config.name_)
                     continue;
                 // Does one of the installed configs conflict one of the to-be-installed configs?
-                if (!fnmatch(dependencyConflict.c_str(),installedConfig->name_.c_str(), FNM_CASEFOLD))
+                if (!fnmatch(dependencyConflict.c_str(),installedConfig.name_.c_str(), FNM_CASEFOLD))
                 {
                     // Check if conflicts is already in the conflicts vector
                     bool found = std::find_if(conflicts.begin(), conflicts.end(),
-                            [&dependencyConflict](const std::shared_ptr<Config>& conflict)
+                            [&dependencyConflict](const auto& conflict)
                             {
-                                return conflict->name_ == dependencyConflict;
+                                                  return conflict.name_ == dependencyConflict;
                             }) != conflicts.end();
                     // If not, add it to the conflicts vector. This will now be shown to the user.
                     if (!found)
@@ -321,12 +305,12 @@ std::vector<std::shared_ptr<Config>> Data::getAllLocalConflicts(std::shared_ptr<
     return conflicts;
 }
 
-std::vector<std::shared_ptr<Config>> Data::getAllLocalRequirements(std::shared_ptr<Config> config)
+std::vector<Config> Data::getAllLocalRequirements(const Config& config)
 {
-    std::vector<std::shared_ptr<Config>> requirements;
-    std::vector<std::shared_ptr<Config>> installedConfigs;
+    std::vector<Config> requirements;
+    std::vector<Config> installedConfigs;
 
-    if ("USB" == config->type_)
+    if ("USB" == config.type_)
     {
         installedConfigs = installedUSBConfigs;
     }
@@ -338,14 +322,14 @@ std::vector<std::shared_ptr<Config>> Data::getAllLocalRequirements(std::shared_p
     // Check if this config is required by another installed config
     for (auto& installedConfig : installedConfigs)
     {
-        for (const auto& dependency : installedConfig->dependencies_)
+        for (const auto& dependency : installedConfig.dependencies_)
         {
-            if (dependency == config->name_)
+            if (dependency == config.name_)
             {
                 bool found = std::find_if(requirements.begin(), requirements.end(),
-                        [&installedConfig](const std::shared_ptr<Config>& req)
+                        [&installedConfig](const auto& req)
                         {
-                            return req->name_ == installedConfig->name_;
+                            return req.name_ == installedConfig.name_;
                         }) != requirements.end();
 
                 if (!found)
@@ -389,7 +373,7 @@ void Data::fillDevices(hw_item hw, std::vector<std::shared_ptr<Device>>& devices
 void Data::fillAllConfigs(const std::string& type)
 {
     std::set<std::filesystem::path> configPaths;
-    std::vector<std::shared_ptr<Config>>* configs;
+    std::vector<Config>* configs;
 
     if ("USB" == type)
     {
@@ -405,15 +389,15 @@ void Data::fillAllConfigs(const std::string& type)
     for (auto&& configPath = configPaths.begin();
             configPath != configPaths.end(); ++configPath)
     {
-        std::unique_ptr<Config> config{new Config((*configPath), type)};
+        Config config{*configPath, type};
 
-        if (config->readConfigFile((*configPath)))
+        if (config.readConfigFile((*configPath)))
         {
-            configs->emplace_back(config.release());
+            configs->emplace_back(std::move(config));
         }
         else
         {
-            invalidConfigs.emplace_back(config.release());
+            invalidConfigs.emplace_back(std::move(config));
         }
     }
 }
@@ -474,7 +458,7 @@ void Data::updateConfigData()
 }
 
 void Data::setMatchingConfigs(const std::vector<std::shared_ptr<Device>>& devices,
-        std::vector<std::shared_ptr<Config>>& configs, bool setAsInstalled)
+        std::vector<Config>& configs, bool setAsInstalled)
 {
     for (auto& config : configs)
     {
@@ -482,7 +466,7 @@ void Data::setMatchingConfigs(const std::vector<std::shared_ptr<Device>>& device
     }
 }
 
-void Data::setMatchingConfig(std::shared_ptr<Config> config,
+void Data::setMatchingConfig(const Config& config,
         const std::vector<std::shared_ptr<Device>>& devices, bool setAsInstalled)
 {
     std::vector<std::shared_ptr<Device>> foundDevices;
@@ -503,27 +487,27 @@ void Data::setMatchingConfig(std::shared_ptr<Config> config,
     }
 }
 
-void Data::addConfigSorted(std::vector<std::shared_ptr<Config>>& configs,
-        std::shared_ptr<Config> newConfig)
+void Data::addConfigSorted(std::vector<Config>& configs,
+        const Config& newConfig)
 {
     bool found = std::find_if(configs.begin(), configs.end(),
-            [&newConfig](const std::shared_ptr<Config>& config)
+            [&newConfig](const Config& config)
             {
-                return newConfig->name_ == config->name_;
+                return newConfig.name_ == config.name_;
             }) != configs.end();
 
-    if (!found)
+    if (found)
     {
-        for (auto&& config = configs.begin(); config != configs.end(); ++config)
-        {
-            if (newConfig->priority_ > (*config)->priority_)
-            {
-                configs.insert(config, std::shared_ptr<Config>(newConfig));
-                return;
-            }
-        }
-        configs.emplace_back(newConfig);
+        return;
     }
+
+    auto it = std::find_if(configs.begin(), configs.end(),
+                           [&newConfig](const Config& config)
+                           {
+                               return newConfig.priority_ > config.priority_;
+                           });
+
+    configs.insert(it, std::move(newConfig));
 }
 
 Vita::string Data::from_Hex(std::uint16_t hexnum, int fill)

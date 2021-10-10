@@ -34,6 +34,7 @@
 #include <vector>
 #include <filesystem>
 #include <set>
+#include <optional>
 
 #include "Config.hpp"
 #include "const.h"
@@ -57,35 +58,35 @@ public:
     Environment environment;
     std::vector<std::shared_ptr<Device>> USBDevices;
     std::vector<std::shared_ptr<Device>> PCIDevices;
-    std::vector<std::shared_ptr<Config>> installedUSBConfigs;
-    std::vector<std::shared_ptr<Config>> installedPCIConfigs;
-    std::vector<std::shared_ptr<Config>> allUSBConfigs;
-    std::vector<std::shared_ptr<Config>> allPCIConfigs;
-    std::vector<std::shared_ptr<Config>> invalidConfigs;
+    std::vector<Config> installedUSBConfigs;
+    std::vector<Config> installedPCIConfigs;
+    std::vector<Config> allUSBConfigs;
+    std::vector<Config> allPCIConfigs;
+    std::vector<Config> invalidConfigs;
 
     void updateInstalledConfigData();
-    void getAllDevicesOfConfig(std::shared_ptr<Config> config, std::vector<std::shared_ptr<Device>>& foundDevices);
+    void getAllDevicesOfConfig(const Config& config, std::vector<std::shared_ptr<Device>>& foundDevices);
 
-    std::vector<std::shared_ptr<Config>> getAllDependenciesToInstall(std::shared_ptr<Config> config);
-    void getAllDependenciesToInstall(std::shared_ptr<Config> config,
-            std::vector<std::shared_ptr<Config>>& installedConfigs,
-            std::vector<std::shared_ptr<Config>> *depends);
-    std::shared_ptr<Config> getDatabaseConfig(const std::string& configName,
+    std::vector<Config> getAllDependenciesToInstall(const Config&  config);
+    void getAllDependenciesToInstall(const Config& config,
+            std::vector<Config>& installedConfigs,
+            std::vector<Config> *depends);
+    std::optional<Config> getDatabaseConfig(const std::string& configName,
             const std::string& configType);
-    std::vector<std::shared_ptr<Config>> getAllLocalConflicts(std::shared_ptr<Config> config);
-    std::vector<std::shared_ptr<Config>> getAllLocalRequirements(std::shared_ptr<Config> config);
+    std::vector<Config> getAllLocalConflicts(const Config&  config);
+    std::vector<Config> getAllLocalRequirements(const Config& config);
 
 private:
     void getAllDevicesOfConfig(const std::vector<std::shared_ptr<Device>>& devices,
-            std::shared_ptr<Config> config, std::vector<std::shared_ptr<Device>>& foundDevices);
-    void fillInstalledConfigs(const std::string& type);
+            const Config& config, std::vector<std::shared_ptr<Device>>& foundDevices);
+    void fillInstalledConfigs(std::vector<Config>& configs, const std::set<std::filesystem::path>& configPaths, const std::string& type);
     void fillDevices(hw_item hw, std::vector<std::shared_ptr<Device>>& devices);
     void fillAllConfigs(const std::string& type);
     void setMatchingConfigs(const std::vector<std::shared_ptr<Device>>& devices,
-            std::vector<std::shared_ptr<Config>>& configs, bool setAsInstalled);
-    void setMatchingConfig(std::shared_ptr<Config> config, const std::vector<std::shared_ptr<Device>>& devices,
+            std::vector<Config>& configs, bool setAsInstalled);
+    void setMatchingConfig(const Config& config, const std::vector<std::shared_ptr<Device>>& devices,
             bool setAsInstalled);
-    void addConfigSorted(std::vector<std::shared_ptr<Config>>& configs, std::shared_ptr<Config> newConfig);
+    void addConfigSorted(std::vector<Config>& configs, const Config& newConfig);
     std::set<std::filesystem::path> getRecursiveDirectoryFileList(const std::filesystem::path& directoryPath,
             const std::string& onlyFilename = "");
 

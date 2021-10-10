@@ -42,8 +42,8 @@ struct Device
     std::string vendorID_;
     std::string sysfsBusID_;
     std::string sysfsID_;
-    std::vector<std::shared_ptr<Config>> availableConfigs_;
-    std::vector<std::shared_ptr<Config>> installedConfigs_;
+    std::vector<Config> availableConfigs_;
+    std::vector<Config> installedConfigs_;
 };
 
 #endif /* DEVICE_HPP_ */

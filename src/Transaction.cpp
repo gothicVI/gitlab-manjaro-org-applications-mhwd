@@ -24,12 +24,12 @@
 
 #include "Transaction.hpp"
 
-Transaction::Transaction(Data data, std::shared_ptr<Config> config, MHWD::TransactionType type,
+Transaction::Transaction(Data data, Config* config, MHWD::TransactionType type,
         bool allowReinstallation)
         :  config_(config), type_(type),
-           dependencyConfigs_(data.getAllDependenciesToInstall(config)),
-           conflictedConfigs_(data.getAllLocalConflicts(config)),
-           configsRequirements_(data.getAllLocalRequirements(config)),
+           dependencyConfigs_(data.getAllDependenciesToInstall(*config)),
+           conflictedConfigs_(data.getAllLocalConflicts(*config)),
+           configsRequirements_(data.getAllLocalRequirements(*config)),
            allowedToReinstall_(allowReinstallation)
 {
 }
