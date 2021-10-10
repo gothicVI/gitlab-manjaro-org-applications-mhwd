@@ -75,7 +75,7 @@ private:
     std::vector<std::string> configs_;
     std::string version_, year_;
 
-    bool performTransaction(std::shared_ptr<Config> config, MHWD::TRANSACTIONTYPE type);
+    bool performTransaction(std::shared_ptr<Config> config, MHWD::TransactionType type);
     bool isUserRoot() const;
     std::vector<std::string> checkEnvironment() const;
 
@@ -83,12 +83,12 @@ private:
     std::shared_ptr<Config> getDatabaseConfig(const std::string& configName, const std::string& configType);
     std::shared_ptr<Config> getAvailableConfig(const std::string& configName, const std::string& configType);
 
-    MHWD::STATUS performTransaction(const Transaction& transaction);
+    MHWD::Status performTransaction(const Transaction& transaction);
     bool proceedWithInstallation(const std::string& input) const;
 
-    MHWD::STATUS installConfig(std::shared_ptr<Config> config);
-    MHWD::STATUS uninstallConfig(Config *config);
-    bool runScript(std::shared_ptr<Config> config, MHWD::TRANSACTIONTYPE operationType);
+    MHWD::Status installConfig(std::shared_ptr<Config> config);
+    MHWD::Status uninstallConfig(Config *config);
+    bool runScript(std::shared_ptr<Config> config, MHWD::TransactionType operationType);
     void tryToParseCmdLineOptions(int argc, char* argv[], bool& autoConfigureNonFreeDriver,
             std::string& operationType, std::string& autoConfigureClassID);
     bool optionsDontInterfereWithEachOther() const;

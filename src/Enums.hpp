@@ -28,7 +28,7 @@
 namespace MHWD
 {
 
-enum class STATUS
+enum class Status
 {
     SUCCESS,
     ERROR_CONFLICTS,
@@ -40,7 +40,7 @@ enum class STATUS
     ERROR_SET_DATABASE
 };
 
-enum class MESSAGETYPE
+enum class MessageType
 {
     CONSOLE_OUTPUT,
     INSTALLDEPENDENCY_START,
@@ -51,7 +51,7 @@ enum class MESSAGETYPE
     REMOVE_END
 };
 
-enum class TRANSACTIONTYPE
+enum class TransactionType
 {
     INSTALL, REMOVE
 };

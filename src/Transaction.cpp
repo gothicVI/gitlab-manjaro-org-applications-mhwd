@@ -24,7 +24,7 @@
 
 #include "Transaction.hpp"
 
-Transaction::Transaction(Data data, std::shared_ptr<Config> config, MHWD::TRANSACTIONTYPE type,
+Transaction::Transaction(Data data, std::shared_ptr<Config> config, MHWD::TransactionType type,
         bool allowReinstallation)
         :  config_(config), type_(type),
            dependencyConfigs_(data.getAllDependenciesToInstall(config)),

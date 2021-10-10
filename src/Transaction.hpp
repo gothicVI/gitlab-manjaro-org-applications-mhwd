@@ -35,12 +35,12 @@ class Transaction
 {
 public:
     Transaction() = delete;
-    Transaction(Data data, std::shared_ptr<Config> config, MHWD::TRANSACTIONTYPE type,
+    Transaction(Data data, std::shared_ptr<Config> config, MHWD::TransactionType type,
             bool allowReinstallation);
 
     bool isAllowedToReinstall() const;
     std::shared_ptr<Config> config_;
-    MHWD::TRANSACTIONTYPE type_;
+    MHWD::TransactionType type_;
     std::vector<std::shared_ptr<Config>> dependencyConfigs_;
     std::vector<std::shared_ptr<Config>> conflictedConfigs_;
     std::vector<std::shared_ptr<Config>> configsRequirements_;

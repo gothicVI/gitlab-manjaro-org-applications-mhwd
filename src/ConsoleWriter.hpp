@@ -40,7 +40,7 @@ public:
     void printStatus(const std::string& statusMsg) const;
     void printError(const std::string& errorMsg) const;
     void printWarning(const std::string& warningMsg) const;
-    void printMessage(MHWD::MESSAGETYPE type, const std::string& str) const;
+    void printMessage(MHWD::MessageType type, const std::string& str) const;
     void printHelp() const;
     void printVersion(const std::string& versionMhwd, const std::string& yearCopy) const;
     void listDevices(const std::vector<std::shared_ptr<Device>>& devices,

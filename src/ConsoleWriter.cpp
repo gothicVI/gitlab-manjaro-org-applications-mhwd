@@ -50,29 +50,29 @@ void ConsoleWriter::printWarning(const std::string& warningMsg) const
             << CONSOLE_COLOR_RESET << warningMsg << std::endl;
 }
 
-void ConsoleWriter::printMessage(MHWD::MESSAGETYPE type, const std::string& msg) const
+void ConsoleWriter::printMessage(MHWD::MessageType type, const std::string& msg) const
 {
     switch(type)
     {
-        case MHWD::MESSAGETYPE::CONSOLE_OUTPUT:
+        case MHWD::MessageType::CONSOLE_OUTPUT:
             std::cout << CONSOLE_TEXT_OUTPUT_COLOR << msg << CONSOLE_COLOR_RESET;
             break;
-        case MHWD::MESSAGETYPE::INSTALLDEPENDENCY_START:
+        case MHWD::MessageType::INSTALLDEPENDENCY_START:
             printStatus("Installing dependency " + msg + "...");
             break;
-        case MHWD::MESSAGETYPE::INSTALLDEPENDENCY_END:
+        case MHWD::MessageType::INSTALLDEPENDENCY_END:
             printStatus("Successfully installed dependency " + msg);
             break;
-        case MHWD::MESSAGETYPE::INSTALL_START:
+        case MHWD::MessageType::INSTALL_START:
             printStatus("Installing " + msg + "...");
             break;
-        case MHWD::MESSAGETYPE::INSTALL_END:
+        case MHWD::MessageType::INSTALL_END:
             printStatus("Successfully installed " + msg);
             break;
-        case MHWD::MESSAGETYPE::REMOVE_START:
+        case MHWD::MessageType::REMOVE_START:
             printStatus("Removing " + msg + "...");
             break;
-        case MHWD::MESSAGETYPE::REMOVE_END:
+        case MHWD::MessageType::REMOVE_END:
             printStatus("Successfully removed " + msg);
             break;
         default:
