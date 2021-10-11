@@ -504,7 +504,7 @@ bool Mhwd::runScript(const Config& config, MHWD::TransactionType operationType)
     }
 }
 
-void Mhwd::setVersionMhwd(std::string versionOfSoftware, std::string yearCopyright)
+void Mhwd::setVersionMhwd(const std::string& versionOfSoftware,const std::string& yearCopyright)
 {
     version_ = versionOfSoftware;
     year_ = yearCopyright;

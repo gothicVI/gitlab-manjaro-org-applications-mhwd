@@ -47,7 +47,7 @@ class Mhwd
 public:
     Mhwd() = default;
     ~Mhwd() = default;
-    void setVersionMhwd(std::string versionOfSoftware, std::string yearCopyright);
+    void setVersionMhwd(const std::string &versionOfSoftware, const std::string &yearCopyright);
     int launch(int argc, char *argv[]);
 
 private:
