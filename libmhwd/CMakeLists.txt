@@ -1,4 +1,4 @@
-include_directories(. vita ${mhwd_SOURCE_DIR}/src)
+include_directories(. vita)
 
 ###
 ### mhwd library
@@ -7,10 +7,18 @@ include_directories(. vita ${mhwd_SOURCE_DIR}/src)
 set( LIB_HEADERS
     const.h
     vita/string.hpp
+    Data.hpp
+    Device.hpp
+    Enums.hpp
+    Utils.hpp
+    Config.hpp
 )
 
 set( LIB_SOURCES
     vita/string.cpp
+    Data.cpp
+    Device.cpp
+    Config.cpp
 )
 
 set( LIB_LIBS hd)

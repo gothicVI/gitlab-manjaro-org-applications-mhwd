@@ -5,20 +5,13 @@ include_directories(. ${mhwd_SOURCE_DIR}/libmhwd)
 ###
 
 set( HEADERS
-    Config.hpp
     ConsoleWriter.hpp
-    Data.hpp
-    Device.hpp
-    Enums.hpp
     Mhwd.hpp
     Transaction.hpp
 )
 
 set( SOURCES
-    Config.cpp
     ConsoleWriter.cpp
-    Data.cpp
-    Device.cpp
     main.cpp
     Mhwd.cpp
     Transaction.cpp

@@ -86,18 +86,18 @@ void Data::fillInstalledConfigs(std::vector<Config>& configs,
 
 void Data::getAllDevicesOfConfig(const Config& config, std::vector<Device*>& foundDevices)
 {
-    std::vector<Device> devices;
+    std::vector<Device>* devices;
 
     if ("USB" == config.type_)
     {
-        devices = USBDevices;
+        devices = &USBDevices;
     }
     else
     {
-        devices = PCIDevices;
+        devices = &PCIDevices;
     }
 
-    getAllDevicesOfConfig(devices, config, foundDevices);
+    getAllDevicesOfConfig(*devices, config, foundDevices);
 }
 
 template<typename TInputIterator>
