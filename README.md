@@ -1,6 +1,6 @@
 ## Manjaro HardWare Detection (mhwd)
 
-#### Copyright © 2012-2018 Manjaro Developers
+#### Copyright © 2012-2021 Manjaro Developers
 #### Project licensed under GNU GPL v.3 - Check COPYING file
 
 #### The Manjaro HardWare Detection (mhwd) command is a unique feature of [Manjaro Linux](http://manjaro.org/) operating system.
@@ -28,7 +28,7 @@ The code convention used in this project is CamelCase. For example:
 Instead of:
 
 ```c++
-void Mhwd::set_version_mhwd(std::string version_of_software, std::string year_copyright)
+void Mhwd::set_version_mhwd(const std::string& version_of_software, const std::string& year_copyright)
 {
 }
 ```
@@ -36,7 +36,7 @@ void Mhwd::set_version_mhwd(std::string version_of_software, std::string year_co
 write:
 
 ```c++
-void Mhwd::setVersionMhwd(std::string versionOfSoftware, std::string yearCopyright)
+void Mhwd::setVersionMhwd(const std::string& versionOfSoftware,const std::string& yearCopyright)
 {
 }
 ```
@@ -48,7 +48,7 @@ Don't use tabs, instead use spaces and count 4 characters.
 #### Software need for coding or testing
 
 * C++ tool chain: [g++](https://gcc.gnu.org/) or [clang](http://clang.llvm.org/), [cmake](http://www.cmake.org/), [make](http://www.gnu.org/software/make/)
-* Good Knowledge of [C++11](http://isocpp.org/)
+* Good Knowledge of [C++17](http://isocpp.org/)
 * [git](http://git-scm.com/)
 
 #### Building
