@@ -9,5 +9,5 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 endif()
 
 add_subdirectory(libmhwd)
-add_subdirectory(src)
+add_subdirectory(mhwd-bin)
 add_subdirectory(scripts)
