@@ -23,7 +23,7 @@ MHWD_ADD_DEVICE_SECTION_FOR_EACH_BUSID()
     fi
 
     while read BUSID; do
-        MHWD_ADD_DEVICE_SECTION "$XORGDRIVER" "$XORGFILE" "BusID       \"PCI:$BUSID\"|$4" 
+        MHWD_ADD_DEVICE_SECTION "$XORGDRIVER" "$XORGFILE" "BusID       \"PCI:$BUSID\"|$4"
     done <<< "$(echo "$PCIBUSIDS")"
 }
 

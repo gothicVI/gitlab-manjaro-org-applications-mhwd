@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6) 
+cmake_minimum_required (VERSION 2.6)
 project(mhwd)
 
 set(EXECUTABLE_OUTPUT_PATH ${mhwd_SOURCE_DIR}/bin)
