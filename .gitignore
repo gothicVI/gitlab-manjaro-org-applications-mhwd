@@ -10,3 +10,8 @@ Makefile
 *settings
 *project
 bin/*
+
+# pre-commit hook stuff
+.pre-commit-config.yaml
+pylintrc
+setup.cfg
