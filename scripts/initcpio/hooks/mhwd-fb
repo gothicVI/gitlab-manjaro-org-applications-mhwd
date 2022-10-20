@@ -48,7 +48,7 @@ run_earlyhook()
 run_latehook()
 {
     init_args
-    
+
     if [ "${ARG_FB_DRIVER}" == "uvesafb" ]; then
         if [ "${ARG_RESOLUTION}" == "" ]; then
             /sbin/modprobe uvesafb

@@ -32,7 +32,7 @@ check_system() {
         if [ "${arg}" == "mhwd-fb" ]; then
             found="true"
             break
-        fi 
+        fi
     done
 
     if [ "${found}" != "true" ]; then
@@ -99,7 +99,7 @@ set_framebuffer() {
         echo "error: invalid function argument!"
         exit 1
     fi
-    
+
     # Adjust grub default file
     sed -i "/#/!s|GRUB_CMDLINE_LINUX[ ]*=.*|GRUB_CMDLINE_LINUX=\"${NEW_GRUB_CMDLINE_LINUX}\"|g" "${GRUBDEFAULT}"
 
