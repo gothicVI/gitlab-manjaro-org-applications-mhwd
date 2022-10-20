@@ -45,7 +45,7 @@ kernel_install() {
         [[ $kernel != linux[0-9][0-9]?([0-9]) && $kernel != linux[0-9][0-9]?([0-9])-rt && $kernel != "rmc" ]] && err "Invalid argument.\nPlease choose one of the $(kernel_repo)"
         [[ $current = $kernel ]] && err "You can't reinstall your current kernel. Please use 'pacman -Syu' instead to update."
         [[ -z $(pacman -Ssq "^$kernel$") ]] && err "Please make sure if the given kernel(s) exist(s).\n$(kernel_repo)"
-        
+
         for pkg in $(pacman -Qqs "$current"); do
             pkg=${pkg//$current/$kernel}
             [[ -n $(pacman -Ssq "^$pkg$" | grep -E "^$pkg$|^$pkg-\S+$") ]] && pkginstall+=("$pkg")
