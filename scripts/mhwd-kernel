@@ -63,10 +63,10 @@ kernel_install() {
 
     pacman -S "${pkginstall[@]}"
 
-    [[ ! -e "/usr/bin/update-grub" && -e "/usr/bin/grub-mkconfig" ]] && update_grub
-
     [[ $rmc = 1 && $? = 0 ]] && pacman -R $(pacman -Qqs $current)
     [[ $rmc = 1 && $? != 0 ]] && { echo ""; err "'rmc' aborted because the kernel failed to install or canceled on removal."; }
+
+    [[ ! -e "/usr/bin/update-grub" && -e "/usr/bin/grub-mkconfig" ]] && update_grub
 }
 
 kernel_repo() {
