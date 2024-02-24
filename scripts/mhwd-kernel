@@ -21,6 +21,21 @@ kernel_usage() {
     -r  --remove            Remove a kernel             [kernel(s)]"
 }
 
+update_grub() {
+    # Update grub configuration file
+    echo ""
+    echo ":: grub-mkconfig output:"
+    grub-mkconfig -o /boot/grub/grub.cfg
+    # workaround for https://git.savannah.gnu.org/cgit/grub.git/commit/?id=3cf2e848bc03c44d30bb87e583d12efe7e7ccf75
+    # if grub is not updated in MBR/EFI dashes still won't work, hence we remove them
+    sed -i -e '/cryptomount -u/ {s/-//g;s/ u/ -u/g}' /boot/grub/grub.cfg
+
+    if [ $? != 0 ]; then
+        echo "error: grub-mkconfig failed!"
+        exit 1
+    fi
+}
+
 kernel_install() {
     pkginstall=()
     rmc=0
@@ -47,6 +62,8 @@ kernel_install() {
     fi
 
     pacman -S "${pkginstall[@]}"
+
+    [[ ! -e "/usr/bin/update-grub" && -e "/usr/bin/grub-mkconfig" ]] && update_grub
 
     [[ $rmc = 1 && $? = 0 ]] && pacman -R $(pacman -Qqs $current)
     [[ $rmc = 1 && $? != 0 ]] && { echo ""; err "'rmc' aborted because the kernel failed to install or canceled on removal."; }
@@ -80,6 +97,8 @@ kernel_remove() {
     done
 
     pacman -R "${pkgremove[@]}"
+
+    [[ ! -e "/usr/bin/update-grub" && -e "/usr/bin/grub-mkconfig" ]] && update_grub
 }
 
 IFS=. read -r major minor _ <<< "$(uname -r)"
