@@ -52,7 +52,7 @@ kernel_install() {
         done
     done
 
-    pacman -Syy
+    pacman -Sy
 
     outofdate="$(pacman -Qqu | tr '\n' ' ')"
     if [[ -n $outofdate ]]; then
