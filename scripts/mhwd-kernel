@@ -12,8 +12,14 @@ err() {
     printf "\e[31mError:\e[0m %s\n" "$1" 1>&2; exit 1
 }
 
-LTS_KERNEL=$(wget -q https://gitlab.manjaro.org/applications/manjaro-settings-manager/-/raw/master/src/libmsm/KernelModel.cpp -O - | grep "KernelModel::getLtsKernels() const" -A 3 | grep "return QStringList()")
-RECOMMENDED_KERNEL=$(wget -q https://gitlab.manjaro.org/applications/manjaro-settings-manager/-/raw/master/src/libmsm/KernelModel.cpp -O - | grep "KernelModel::getRecommendedKernels() const" -A 3 | grep "return QStringList()")
+LTS_KERNEL=$(\
+    wget -q https://gitlab.manjaro.org/applications/manjaro-settings-manager/-/raw/master/src/libmsm/KernelModel.cpp -O - | \
+    grep "KernelModel::getLtsKernels() const" -A 3 | grep "return QStringList()"\
+)
+RECOMMENDED_KERNEL=$(\
+    wget -q https://gitlab.manjaro.org/applications/manjaro-settings-manager/-/raw/master/src/libmsm/KernelModel.cpp -O - | \
+    grep "KernelModel::getRecommendedKernels() const" -A 3 | grep "return QStringList()"\
+)
 
 kernel_usage() {
     echo "Usage: mhwd-kernel [option]
@@ -45,7 +51,8 @@ kernel_install() {
 
     for kernel in "$@"; do
         [[ $kernel = "rmc" ]] && rmc=1 && continue
-        [[ $kernel != linux[0-9][0-9]?([0-9]) && $kernel != linux[0-9][0-9]?([0-9])-rt && $kernel != "rmc" ]] && err "Invalid argument.\nPlease choose one of the $(kernel_repo)"
+        [[ $kernel != linux[0-9][0-9]?([0-9]) && $kernel != linux[0-9][0-9]?([0-9])-rt && $kernel != "rmc" ]] \
+            && err "Invalid argument.\nPlease choose one of the $(kernel_repo)"
         [[ $current = "$kernel" ]] && err "You can't reinstall your current kernel. Please use 'pacman -Syu' instead to update."
         [[ -z $(pacman -Ssq "^$kernel$") ]] && err "Please make sure if the given kernel(s) exist(s).\n$(kernel_repo)"
 
@@ -75,15 +82,22 @@ kernel_install() {
 
 kernel_repo() {
     printf "\e[32mavailable kernels:\e[0m\n"
-    pacman -Ssq "^linux[0-9][0-9]?([0-9])$" | while read -r; do echo "   * $REPLY [$(pacman -S --info "$REPLY" | grep 'Version' | awk '{print $3}')] $([[ "$LTS_KERNEL" == *"$REPLY"* ]] && echo LTS) $([[ "$RECOMMENDED_KERNEL" == *"$REPLY"* ]] && echo RECOMMENDED)"; done
-    pacman -Ssq "^linux[0-9][0-9]?([0-9])-rt$" | while read -r; do echo "   * $REPLY [$(pacman -S --info "$REPLY" | grep 'Version' | awk '{print $3}')]"; done
+    pacman -Ssq "^linux[0-9][0-9]?([0-9])$" | while read -r; do echo \
+        "   * $REPLY [$(pacman -S --info "$REPLY" | grep 'Version' | awk '{print $3}')] $([[ "$LTS_KERNEL" == *"$REPLY"* ]] && echo LTS) $([[ "$RECOMMENDED_KERNEL" == *"$REPLY"* ]] && echo RECOMMENDED)"; done
+    pacman -Ssq "^linux[0-9][0-9]?([0-9])-rt$" | while read -r; do echo \
+        "   * $REPLY [$(pacman -S --info "$REPLY" | grep 'Version' | awk '{print $3}')]"; done
 }
 
 kernel_list() {
-    printf "\e[32mCurrently running:\e[0m %s (%s [%s%s%s])\n" "$(uname -r)" "${current}" "$(pacman -Q --info "$current" | grep 'Version' | awk '{print $3}')" "$([[ "$LTS_KERNEL" == *"$current"* ]] && echo ' LTS')" "$([[ "$RECOMMENDED_KERNEL" == *"$current"* ]] && echo ' RECOMMENDED')"
+    printf "\e[32mCurrently running:\e[0m %s (%s [%s%s%s])\n" \
+        "$(uname -r)" "${current}" "$(pacman -Q --info "$current" | grep 'Version' | awk '{print $3}')"\
+        "$([[ "$LTS_KERNEL" == *"$current"* ]] && echo ' LTS')"\
+        "$([[ "$RECOMMENDED_KERNEL" == *"$current"* ]] && echo ' RECOMMENDED')"
     echo "The following kernels are installed in your system:"
-    pacman -Qqs "^linux[0-9][0-9]?([0-9])$" | while read -r; do echo "   * $REPLY [$(pacman -Q --info "$REPLY" | grep 'Version' | awk '{print $3}')] $([[ "$LTS_KERNEL" == *"$REPLY"* ]] && echo LTS) $([[ "$RECOMMENDED_KERNEL" == *"$REPLY"* ]] && echo RECOMMENDED)"; done
-    pacman -Qqs "^linux[0-9][0-9]?([0-9])-rt$" | while read -r; do echo "   * $REPLY [$(pacman -Q --info "$REPLY" | grep 'Version' | awk '{print $3}')]"; done
+    pacman -Qqs "^linux[0-9][0-9]?([0-9])$" | while read -r; do echo \
+        "   * $REPLY [$(pacman -Q --info "$REPLY" | grep 'Version' | awk '{print $3}')] $([[ "$LTS_KERNEL" == *"$REPLY"* ]] && echo LTS) $([[ "$RECOMMENDED_KERNEL" == *"$REPLY"* ]] && echo RECOMMENDED)"; done
+    pacman -Qqs "^linux[0-9][0-9]?([0-9])-rt$" | while read -r; do echo \
+        "   * $REPLY [$(pacman -Q --info "$REPLY" | grep 'Version' | awk '{print $3}')]"; done
 }
 
 kernel_remove() {
@@ -91,7 +105,8 @@ kernel_remove() {
 
     for kernel in "$@"; do
         [[ -z "$kernel" ]] && err "Invalid argument (use -h for help)."
-        [[ $kernel != linux[0-9][0-9]?([0-9]) && $kernel != linux[0-9][0-9]?([0-9])-rt ]] && err "Please enter a valid kernel name.\n$(kernel_list)"
+        [[ $kernel != linux[0-9][0-9]?([0-9]) && $kernel != linux[0-9][0-9]?([0-9])-rt ]] \
+            && err "Please enter a valid kernel name.\n$(kernel_list)"
         [[ $current = "$kernel" ]] && err "You can't remove your current kernel."
         [[ -z $(pacman -Qqs "^$1$") ]] && err "Kernel not installed.\n$(kernel_list)"
 
