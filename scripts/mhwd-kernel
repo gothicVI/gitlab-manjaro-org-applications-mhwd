@@ -12,6 +12,9 @@ err() {
     printf "\e[31mError:\e[0m %s\n" "$1" 1>&2; exit 1
 }
 
+LTS_KERNEL=$(wget -q https://gitlab.manjaro.org/applications/manjaro-settings-manager/-/raw/master/src/libmsm/KernelModel.cpp -O - | grep "KernelModel::getLtsKernels() const" -A 3 | grep "return QStringList()")
+RECOMMENDED_KERNEL=$(wget -q https://gitlab.manjaro.org/applications/manjaro-settings-manager/-/raw/master/src/libmsm/KernelModel.cpp -O - | grep "KernelModel::getRecommendedKernels() const" -A 3 | grep "return QStringList()")
+
 kernel_usage() {
     echo "Usage: mhwd-kernel [option]
     -h  --help              Show this help message
@@ -72,14 +75,14 @@ kernel_install() {
 
 kernel_repo() {
     printf "\e[32mavailable kernels:\e[0m\n"
-    pacman -Ssq "^linux[0-9][0-9]?([0-9])$" | while read -r; do echo "   * $REPLY [$(pacman -S --info "$REPLY" | grep 'Version' | awk '{print $3}')]"; done
+    pacman -Ssq "^linux[0-9][0-9]?([0-9])$" | while read -r; do echo "   * $REPLY [$(pacman -S --info "$REPLY" | grep 'Version' | awk '{print $3}')] $([[ "$LTS_KERNEL" == *"$REPLY"* ]] && echo LTS) $([[ "$RECOMMENDED_KERNEL" == *"$REPLY"* ]] && echo RECOMMENDED)"; done
     pacman -Ssq "^linux[0-9][0-9]?([0-9])-rt$" | while read -r; do echo "   * $REPLY [$(pacman -S --info "$REPLY" | grep 'Version' | awk '{print $3}')]"; done
 }
 
 kernel_list() {
-    printf "\e[32mCurrently running:\e[0m %s (%s [%s])\n" "$(uname -r)" "${current}" "$(pacman -Q --info "$current" | grep 'Version' | awk '{print $3}')"
+    printf "\e[32mCurrently running:\e[0m %s (%s [%s%s%s])\n" "$(uname -r)" "${current}" "$(pacman -Q --info "$current" | grep 'Version' | awk '{print $3}')" "$([[ "$LTS_KERNEL" == *"$current"* ]] && echo ' LTS')" "$([[ "$RECOMMENDED_KERNEL" == *"$current"* ]] && echo ' RECOMMENDED')"
     echo "The following kernels are installed in your system:"
-    pacman -Qqs "^linux[0-9][0-9]?([0-9])$" | while read -r; do echo "   * $REPLY [$(pacman -Q --info "$REPLY" | grep 'Version' | awk '{print $3}')]"; done
+    pacman -Qqs "^linux[0-9][0-9]?([0-9])$" | while read -r; do echo "   * $REPLY [$(pacman -Q --info "$REPLY" | grep 'Version' | awk '{print $3}')] $([[ "$LTS_KERNEL" == *"$REPLY"* ]] && echo LTS) $([[ "$RECOMMENDED_KERNEL" == *"$REPLY"* ]] && echo RECOMMENDED)"; done
     pacman -Qqs "^linux[0-9][0-9]?([0-9])-rt$" | while read -r; do echo "   * $REPLY [$(pacman -Q --info "$REPLY" | grep 'Version' | awk '{print $3}')]"; done
 }
 
