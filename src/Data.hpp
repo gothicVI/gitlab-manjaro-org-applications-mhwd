@@ -6,7 +6,7 @@
  *  Łukasz Matysiak <december0123@gmail.com>
  *  Filipe Marques <eagle.software3@gmail.com>
  *
- *  Copyright (C) 2012 - 2016 Manjaro (http://manjaro.org)
+ *  Copyright (C) 2012 - 2024 Manjaro (http://manjaro.org)
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 #include "Config.hpp"
 #include "const.h"
