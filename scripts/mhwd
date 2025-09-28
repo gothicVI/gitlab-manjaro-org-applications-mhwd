@@ -349,6 +349,9 @@ if [ "${REMOVE}" == "true" ]; then
     if [ "${DEPKMODS}" != "" ]; then
         PACKAGES="${PACKAGES} ${DEPKMODS}"
     fi
+    if [ "${CONKMODS}" != "" ]; then
+        PACKAGES="${PACKAGES} ${CONKMODS}"
+    fi
 
     # Check if packages are installed
     MHWD_CHECK_PKGS
