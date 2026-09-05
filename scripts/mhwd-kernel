@@ -12,13 +12,33 @@ err() {
     printf "\e[31mError:\e[0m %s\n" "$1" 1>&2; exit 1
 }
 
-LTS_KERNEL=$(\
-    wget -q https://gitlab.manjaro.org/applications/manjaro-settings-manager/-/raw/master/src/libmsm/KernelModel.cpp -O - | \
-    grep "KernelModel::getLtsKernels() const" -A 3 | grep "return QStringList()"\
+CACHE_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/KernelModel.cpp"
+URL="https://gitlab.manjaro.org/applications/manjaro-settings-manager/-/raw/master/src/libmsm/KernelModel.cpp"
+
+mkdir -p "$(dirname "$CACHE_FILE")"
+
+# Try to refresh cache, but don't wait long
+wget -q \
+     --timeout=5 \
+     --tries=1 \
+     -O "${CACHE_FILE}.tmp" \
+     "$URL" &&
+    mv "${CACHE_FILE}.tmp" "$CACHE_FILE"
+
+# Ensure we have something to work with
+if [[ ! -f "$CACHE_FILE" ]]; then
+    echo "ERROR: Could not download KernelModel.cpp and no cache exists." >&2
+    exit 1
+fi
+
+LTS_KERNEL=$(
+    grep "KernelModel::getLtsKernels() const" -A 3 "$CACHE_FILE" |
+    grep "return QStringList()"
 )
-RECOMMENDED_KERNEL=$(\
-    wget -q https://gitlab.manjaro.org/applications/manjaro-settings-manager/-/raw/master/src/libmsm/KernelModel.cpp -O - | \
-    grep "KernelModel::getRecommendedKernels() const" -A 3 | grep "return QStringList()"\
+
+RECOMMENDED_KERNEL=$(
+    grep "KernelModel::getRecommendedKernels() const" -A 3 "$CACHE_FILE" |
+    grep "return QStringList()"
 )
 
 kernel_usage() {
