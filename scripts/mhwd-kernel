@@ -13,7 +13,8 @@ err() {
 }
 
 CACHE_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/KernelModel.cpp"
-URL="https://gitlab.manjaro.org/applications/manjaro-settings-manager/-/raw/master/src/libmsm/KernelModel.cpp"
+#URL="https://gitlab.manjaro.org/applications/manjaro-settings-manager/-/raw/master/src/libmsm/KernelModel.cpp"
+URL="https://code.manjaro.org/applications/manjaro-settings-manager/raw/branch/master/src/libmsm/KernelModel.cpp"
 
 mkdir -p "$(dirname "$CACHE_FILE")"
 
